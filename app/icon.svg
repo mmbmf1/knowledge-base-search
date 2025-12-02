@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Chat bubble -->
+  <path
+    d="M12 8C8.686 8 6 10.686 6 14V38C6 41.314 8.686 44 12 44H20V52C20 53.105 20.895 54 22 54C22.553 54 23.053 53.789 23.414 53.447L30.828 46H52C55.314 46 58 43.314 58 40V14C58 10.686 55.314 8 52 8H12Z"
+    fill="#3B82F6"
+  />
+  <!-- Chat bubble tail -->
+  <path
+    d="M20 44L16 50C15.447 50.789 15.947 52 16.828 52H20V44Z"
+    fill="#3B82F6"
+  />
+  <!-- Three dots (chat indicator) -->
+  <circle cx="20" cy="24" r="3" fill="white" />
+  <circle cx="32" cy="24" r="3" fill="white" />
+  <circle cx="44" cy="24" r="3" fill="white" />
+</svg>
