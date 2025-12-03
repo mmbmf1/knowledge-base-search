@@ -32,10 +32,10 @@ CREATE INDEX IF NOT EXISTS feedback_scenario_id_idx ON isp_support.feedback(scen
 CREATE INDEX IF NOT EXISTS feedback_created_at_idx ON isp_support.feedback(created_at);
 
 -- Create resolutions table for step-by-step instructions
--- Note: Multiple scenarios can share the same resolution steps (no UNIQUE constraint)
+-- Note: Each scenario has one resolution, but multiple scenarios can share the same resolution steps
 CREATE TABLE IF NOT EXISTS isp_support.resolutions (
     id SERIAL PRIMARY KEY,
-    scenario_id INTEGER NOT NULL REFERENCES isp_support.scenarios(id) ON DELETE CASCADE,
+    scenario_id INTEGER NOT NULL UNIQUE REFERENCES isp_support.scenarios(id) ON DELETE CASCADE,
     steps TEXT NOT NULL,
     step_type VARCHAR(20) NOT NULL CHECK (step_type IN ('numbered', 'bullets')),
     created_at TIMESTAMP DEFAULT NOW()
