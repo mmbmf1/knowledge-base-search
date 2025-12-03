@@ -70,28 +70,24 @@ export default function Home() {
     }
   }
 
+  const handleCardClick = async (scenarioId: number) => {
+    try {
+      const response = await fetch(`/api/resolution?scenarioId=${scenarioId}`)
+      if (response.ok) {
+        const resolution: Resolution = await response.json()
+        const scenario = results.find((r) => r.id === scenarioId)
+        setSelectedResolution(resolution)
+        setSelectedScenarioTitle(scenario?.title || '')
+        setShowResolutionModal(true)
+      }
+    } catch (err) {
+      console.error('Failed to fetch resolution:', err)
+    }
+  }
+
   const handleFeedback = async (scenarioId: number, rating: number) => {
     if (ratedScenarios.has(scenarioId)) return
-
-    if (rating === 1) {
-      try {
-        const response = await fetch(`/api/resolution?scenarioId=${scenarioId}`)
-        if (response.ok) {
-          const resolution: Resolution = await response.json()
-          const scenario = results.find((r) => r.id === scenarioId)
-          setSelectedResolution(resolution)
-          setSelectedScenarioTitle(scenario?.title || '')
-          setShowResolutionModal(true)
-        } else {
-          await submitFeedback(scenarioId, rating)
-        }
-      } catch (err) {
-        console.error('Failed to fetch resolution:', err)
-        await submitFeedback(scenarioId, rating)
-      }
-    } else {
-      await submitFeedback(scenarioId, rating)
-    }
+    await submitFeedback(scenarioId, rating)
   }
 
   const submitFeedback = async (scenarioId: number, rating: number) => {
@@ -109,11 +105,8 @@ export default function Home() {
 
   const handleCloseModal = () => {
     setShowResolutionModal(false)
-    if (selectedResolution) {
-      submitFeedback(selectedResolution.scenario_id, 1)
-      setSelectedResolution(null)
-      setSelectedScenarioTitle('')
-    }
+    setSelectedResolution(null)
+    setSelectedScenarioTitle('')
   }
 
   const handleClear = () => {
@@ -189,7 +182,8 @@ export default function Home() {
               return (
                 <div
                   key={result.id}
-                  className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-slate-200/50 p-6 hover:shadow-xl hover:border-blue-300/50 transition-all duration-200"
+                  onClick={() => handleCardClick(result.id)}
+                  className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-slate-200/50 p-6 hover:shadow-xl hover:border-blue-300/50 transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
@@ -209,30 +203,13 @@ export default function Home() {
                             </div>
                           )}
                       </div>
-                      <p className="text-slate-600 leading-relaxed mb-4">
+                      <p className="text-slate-600 leading-relaxed">
                         {result.description}
                       </p>
-                      {isRated ? (
-                        <div className="flex items-center gap-2 text-sm text-green-600">
+                      {isRated && (
+                        <div className="flex items-center gap-2 text-sm text-green-600 mt-4">
                           <CheckCircleIcon className="w-4 h-4" />
                           <span>Thank you for your feedback</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleFeedback(result.id, 1)}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-colors text-sm"
-                          >
-                            <HandThumbUpIcon className="w-4 h-4" />
-                            <span>Helpful</span>
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(result.id, -1)}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors text-sm"
-                          >
-                            <HandThumbDownIcon className="w-4 h-4" />
-                            <span>Not helpful</span>
-                          </button>
                         </div>
                       )}
                     </div>
@@ -258,6 +235,9 @@ export default function Home() {
           stepType={selectedResolution.step_type}
           isOpen={showResolutionModal}
           onClose={handleCloseModal}
+          scenarioId={selectedResolution.scenario_id}
+          onFeedback={handleFeedback}
+          isRated={ratedScenarios.has(selectedResolution.scenario_id)}
         />
       )}
     </div>

@@ -1,6 +1,11 @@
 'use client'
 
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import {
+  XMarkIcon,
+  HandThumbUpIcon,
+  HandThumbDownIcon,
+  CheckCircleIcon,
+} from '@heroicons/react/24/outline'
 
 interface ResolutionModalProps {
   title: string
@@ -8,6 +13,9 @@ interface ResolutionModalProps {
   stepType: 'numbered' | 'bullets'
   isOpen: boolean
   onClose: () => void
+  scenarioId: number
+  onFeedback: (scenarioId: number, rating: number) => void
+  isRated: boolean
 }
 
 export default function ResolutionModal({
@@ -16,6 +24,9 @@ export default function ResolutionModal({
   stepType,
   isOpen,
   onClose,
+  scenarioId,
+  onFeedback,
+  isRated,
 }: ResolutionModalProps) {
   if (!isOpen) return null
 
@@ -67,6 +78,38 @@ export default function ResolutionModal({
         </div>
 
         <div className="p-6 border-t border-slate-200 bg-slate-50">
+          {isRated ? (
+            <div className="flex items-center justify-center gap-2 text-green-600 mb-4">
+              <CheckCircleIcon className="w-5 h-5" />
+              <span className="font-medium">Thank you for your feedback</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="text-sm text-slate-600 font-medium">
+                Did this help?
+              </span>
+              <button
+                onClick={() => {
+                  onFeedback(scenarioId, 1)
+                  onClose()
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-50 hover:bg-green-100 text-green-700 transition-colors font-medium"
+              >
+                <HandThumbUpIcon className="w-5 h-5" />
+                <span>Helpful</span>
+              </button>
+              <button
+                onClick={() => {
+                  onFeedback(scenarioId, -1)
+                  onClose()
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition-colors font-medium"
+              >
+                <HandThumbDownIcon className="w-5 h-5" />
+                <span>Not helpful</span>
+              </button>
+            </div>
+          )}
           <button
             onClick={onClose}
             className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
