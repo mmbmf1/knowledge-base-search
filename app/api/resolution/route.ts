@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getResolution } from '@/lib/db'
+import { getResolution, closePool } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,12 +7,18 @@ export async function GET(request: NextRequest) {
     const scenarioId = searchParams.get('scenarioId')
 
     if (!scenarioId) {
-      return NextResponse.json({ error: 'scenarioId is required' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'scenarioId is required' },
+        { status: 400 },
+      )
     }
 
     const id = parseInt(scenarioId, 10)
     if (isNaN(id) || id <= 0) {
-      return NextResponse.json({ error: 'Invalid scenario ID' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Invalid scenario ID' },
+        { status: 400 },
+      )
     }
 
     const resolution = await getResolution(id)
@@ -31,5 +37,7 @@ export async function GET(request: NextRequest) {
       { error: 'Internal server error' },
       { status: 500 },
     )
+  } finally {
+    await closePool()
   }
 }

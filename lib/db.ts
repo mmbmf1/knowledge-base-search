@@ -212,6 +212,8 @@ export async function insertResolution(
   const query = `
     INSERT INTO isp_support.resolutions (scenario_id, steps, step_type)
     VALUES ($1, $2::jsonb, $3)
+    ON CONFLICT (scenario_id) DO UPDATE
+    SET steps = $2::jsonb, step_type = $3
   `
 
   try {

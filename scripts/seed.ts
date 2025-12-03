@@ -11,12 +11,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import {
-  insertScenario,
-  insertResolution,
-  closePool,
-  pool,
-} from '../lib/db'
+import { insertScenario, insertResolution, closePool, pool } from '../lib/db'
 
 // Sample MSR/FTTH troubleshooting scenarios
 // Structure: { title: string, description: string }
@@ -186,6 +181,81 @@ const scenarios = [
     title: 'Router Bridge Mode Issues',
     description:
       'Router configured in bridge mode is not functioning correctly or devices cannot connect. Bridge mode configuration problems or network not accessible. Verify bridge mode is correctly configured, check that another router is handling DHCP, ensure proper cable connections, verify IP addressing scheme, check for IP conflicts, and test with bridge mode disabled to isolate issue.',
+  },
+  {
+    title: 'Billing Question - Unclear Charges',
+    description:
+      'Customer is confused about charges on their bill or wants to understand what specific line items mean. Customer sees unfamiliar charges, wants breakdown of fees, or questions service charges. Review account billing history, explain each charge line by line, clarify service fees and taxes, provide billing statement breakdown, and offer to send detailed invoice via email.',
+  },
+  {
+    title: 'Request Service Upgrade',
+    description:
+      'Customer wants to upgrade their internet service plan to higher speeds or additional features. Customer is experiencing slow speeds, needs more bandwidth, or wants premium service tier. Check current plan details, explain available upgrade options, compare speed tiers and pricing, discuss contract terms if applicable, and process upgrade request.',
+  },
+  {
+    title: 'Request Service Downgrade',
+    description:
+      'Customer wants to downgrade to a lower service tier or reduce their plan. Customer wants to save money, feels current plan is more than needed, or wants to reduce monthly costs. Review current plan, explain available lower tiers, discuss any contract implications, explain potential speed differences, and process downgrade request.',
+  },
+  {
+    title: 'Inquire About Promotions or Deals',
+    description:
+      'Customer is asking about current promotions, discounts, or special offers available. Customer wants to know about new customer deals, retention offers, seasonal promotions, or bundle discounts. Check account eligibility, review current promotions, explain terms and conditions, discuss any contract requirements, and offer applicable deals.',
+  },
+  {
+    title: 'Payment Method Update',
+    description:
+      'Customer needs to update their payment method on file. Credit card expired, wants to change payment method, or needs to add new card. Verify account identity, guide through payment method update process, confirm new payment method is active, and verify next billing will use new method.',
+  },
+  {
+    title: 'Service Transfer or Move',
+    description:
+      'Customer is moving and needs to transfer service to new address or cancel service at current location. Customer is relocating and wants to move service, needs installation at new address, or wants to cancel at old address. Check service availability at new address, schedule installation appointment, discuss transfer fees if applicable, coordinate disconnect at old address, and confirm move dates.',
+  },
+  {
+    title: 'Equipment Upgrade Request',
+    description:
+      'Customer wants to upgrade their router, modem, or other equipment to newer model. Current equipment is outdated, customer wants better performance, or needs equipment with new features. Check account equipment status, explain available equipment options, discuss upgrade costs or rental fees, schedule equipment swap if needed, and arrange return of old equipment.',
+  },
+  {
+    title: 'Service Outage Inquiry',
+    description:
+      'Customer is reporting service outage or asking about known outages in their area. Internet is completely down, customer wants to know if there is a known issue, or checking outage status. Check for reported outages in customer area, verify account status, check for scheduled maintenance, provide estimated restoration time if available, and offer to create service ticket if no known outage.',
+  },
+  {
+    title: 'Plan Comparison Request',
+    description:
+      'Customer wants to compare different service plans or understand plan differences. Customer is shopping for best plan, wants to understand speed differences, or comparing pricing options. Review available plans, explain speed and feature differences, compare pricing and contract terms, discuss which plan fits their usage, and answer questions about plan features.',
+  },
+  {
+    title: 'Early Termination Fee Question',
+    description:
+      'Customer is asking about early termination fees or wants to cancel service before contract ends. Customer wants to cancel service, is moving, or asking about contract cancellation costs. Review contract terms and end date, explain early termination fees if applicable, discuss options to avoid fees, check for contract buyout programs, and process cancellation if requested.',
+  },
+  {
+    title: 'Service Bundle Inquiry',
+    description:
+      'Customer is asking about bundling internet with TV, phone, or other services. Customer wants to add services, asking about bundle pricing, or interested in package deals. Review current services, explain available bundle options, compare bundle vs individual pricing, discuss contract requirements, and offer to set up bundle if interested.',
+  },
+  {
+    title: 'Billing Dispute',
+    description:
+      'Customer is disputing a charge on their bill or believes they were charged incorrectly. Customer sees unexpected charges, questions billing accuracy, or wants to dispute specific line items. Review billing statement, investigate disputed charges, check for billing errors, explain charges or process refund if error found, and update account if needed.',
+  },
+  {
+    title: 'Auto-Pay Setup or Changes',
+    description:
+      'Customer wants to set up automatic payments or modify existing auto-pay settings. Customer wants to enroll in auto-pay, change payment date, or update auto-pay preferences. Verify payment method on file, explain auto-pay benefits, set up automatic billing, confirm payment schedule, and provide confirmation of auto-pay enrollment.',
+  },
+  {
+    title: 'Service Activation for New Customer',
+    description:
+      'New customer needs to activate service or set up new account. Customer just signed up, needs installation scheduled, or wants to activate self-install kit. Verify new account details, schedule installation appointment if needed, provide activation instructions, verify equipment delivery, and confirm service activation date.',
+  },
+  {
+    title: 'Equipment Return or Replacement',
+    description:
+      'Customer needs to return equipment or get replacement for faulty equipment. Equipment is broken, customer is canceling service, or needs equipment swap. Verify equipment on account, process return authorization, provide return shipping label, schedule replacement delivery if needed, and confirm return receipt.',
   },
 ]
 
@@ -613,6 +683,201 @@ const resolutions = [
     ],
     stepType: 'numbered' as const,
   },
+  {
+    steps: [
+      'Access customer account in billing system',
+      'Review current billing statement line by line',
+      'Explain each charge: base service, equipment fees, taxes, surcharges',
+      'Break down any promotional credits or discounts applied',
+      'Clarify any one-time charges or prorated amounts',
+      'Offer to email detailed billing statement',
+      'Answer any specific questions about charges',
+      'Document conversation for account notes',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Review customer current plan and service tier',
+      'Check available upgrade options for their area',
+      'Explain speed differences between current and upgrade tiers',
+      'Discuss pricing and any promotional rates available',
+      'Review contract terms if upgrade requires new agreement',
+      'Explain installation requirements if any',
+      'Process upgrade request and confirm new service details',
+      'Schedule any necessary installation or activation',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Review customer current plan details',
+      'Check available lower tier options',
+      'Explain speed and feature differences with downgrade',
+      'Discuss any contract implications or early termination fees',
+      'Confirm customer understands potential service changes',
+      'Process downgrade request',
+      'Explain when changes take effect',
+      'Update account and confirm new plan details',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Check customer account status and tenure',
+      'Review current promotions available for their account',
+      'Explain promotion terms and conditions',
+      'Discuss any contract requirements for promotional pricing',
+      'Compare promotional pricing to current plan',
+      'Check eligibility for new customer or retention offers',
+      'Apply applicable promotion if customer agrees',
+      'Confirm promotion details and duration',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Verify customer identity with account security questions',
+      'Access account payment settings',
+      'Guide customer to payment method update section',
+      'Have customer enter new payment method details',
+      'Verify new payment method is accepted',
+      'Confirm new payment method is set as primary',
+      'Verify next billing will use new payment method',
+      'Send confirmation email with updated payment info',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Verify service availability at new address',
+      'Check if installation is required at new location',
+      'Schedule installation appointment if needed',
+      'Discuss any transfer or installation fees',
+      'Coordinate disconnect date at old address',
+      'Confirm service transfer dates',
+      'Update account with new service address',
+      'Provide customer with move confirmation and contact info',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Check current equipment on customer account',
+      'Review available equipment upgrade options',
+      'Explain differences between current and new equipment',
+      'Discuss upgrade costs or equipment rental fees',
+      'Schedule equipment swap appointment if needed',
+      'Arrange for new equipment delivery',
+      'Provide instructions for returning old equipment',
+      'Confirm equipment upgrade completion',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Check outage reporting system for customer area',
+      'Verify if there are any known outages or maintenance',
+      'Check customer account status for service issues',
+      'Review any scheduled maintenance in area',
+      'Provide estimated restoration time if outage confirmed',
+      'Create service ticket if no known outage found',
+      'Schedule technician visit if needed',
+      'Follow up with customer on resolution',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Review all available service plans for customer area',
+      'Compare speed tiers and pricing',
+      'Explain feature differences between plans',
+      'Discuss contract terms for each plan option',
+      'Ask about customer usage needs to recommend best fit',
+      'Compare current plan to other options',
+      'Answer specific questions about plan features',
+      'Offer to help switch plans if customer decides',
+    ],
+    stepType: 'bullets' as const,
+  },
+  {
+    steps: [
+      'Review customer contract terms and end date',
+      'Calculate remaining contract time',
+      'Explain early termination fee structure if applicable',
+      'Check for any contract buyout or waiver programs',
+      'Discuss options to avoid fees (transfer, upgrade, etc.)',
+      'Process cancellation if customer confirms',
+      'Explain final billing and equipment return process',
+      'Confirm cancellation date and account closure',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Review customer current services',
+      'Check available bundle options (Internet + TV + Phone)',
+      'Compare bundle pricing vs individual service costs',
+      'Explain bundle features and benefits',
+      'Discuss contract requirements for bundles',
+      'Calculate potential savings with bundle',
+      'Process bundle setup if customer interested',
+      'Schedule any necessary installations',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Review disputed charges on billing statement',
+      'Investigate charge history and account activity',
+      'Check for billing errors or system issues',
+      'Verify if charges are legitimate or incorrect',
+      'Explain charges to customer or process refund if error',
+      'Update account to correct any billing issues',
+      'Provide written confirmation of resolution',
+      'Follow up to ensure customer is satisfied',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Verify payment method is on file and valid',
+      'Explain auto-pay benefits and convenience',
+      'Set up automatic payment from payment method',
+      'Confirm payment date (usually billing date)',
+      'Explain how auto-pay works and when charges occur',
+      'Provide confirmation of auto-pay enrollment',
+      'Send email confirmation with auto-pay details',
+      'Remind customer they can cancel auto-pay anytime',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Verify new account details and customer information',
+      'Check service availability at installation address',
+      'Schedule installation appointment or provide self-install kit',
+      'Confirm equipment delivery if applicable',
+      'Provide activation instructions for self-install',
+      'Verify service activation date and time',
+      'Provide customer with account login credentials',
+      'Confirm installation and test service activation',
+    ],
+    stepType: 'numbered' as const,
+  },
+  {
+    steps: [
+      'Verify equipment on customer account',
+      'Check if equipment return is required (cancellation) or replacement needed',
+      'Process return authorization and generate return label',
+      'Provide return shipping instructions',
+      'Schedule replacement equipment delivery if needed',
+      'Confirm return deadline and shipping address',
+      'Track return shipment and confirm receipt',
+      'Update account once equipment is received',
+    ],
+    stepType: 'numbered' as const,
+  },
 ]
 
 async function seedDatabase() {
@@ -620,8 +885,24 @@ async function seedDatabase() {
   console.log(`Processing ${scenarios.length} scenarios...`)
 
   try {
+    // Check which scenarios already exist
+    const existingScenarios = await pool.query(
+      'SELECT title FROM isp_support.scenarios',
+    )
+    const existingTitles = new Set(
+      existingScenarios.rows.map((row: { title: string }) => row.title),
+    )
+
     for (let i = 0; i < scenarios.length; i++) {
       const scenario = scenarios[i]
+
+      if (existingTitles.has(scenario.title)) {
+        console.log(
+          `[${i + 1}/${scenarios.length}] Skipping (already exists): ${scenario.title}`,
+        )
+        continue
+      }
+
       console.log(
         `[${i + 1}/${scenarios.length}] Processing: ${scenario.title}`,
       )
@@ -633,25 +914,33 @@ async function seedDatabase() {
       console.log(`✓ Inserted: ${scenario.title}`)
     }
 
-    const result = await pool.query(
-      'SELECT id FROM isp_support.scenarios ORDER BY id',
+    // Get all scenarios with their titles to match by title
+    const scenarioResult = await pool.query(
+      'SELECT id, title FROM isp_support.scenarios ORDER BY id',
     )
-    const scenarioIds = result.rows.map((row: { id: number }) => row.id)
+    const scenarioMap = new Map<string, number>()
+    scenarioResult.rows.forEach((row: { id: number; title: string }) => {
+      scenarioMap.set(row.title, row.id)
+    })
 
-    // Now insert resolutions for each scenario
+    // Now insert resolutions for each scenario, matching by title
     console.log('\nInserting resolutions...')
-    for (let i = 0; i < resolutions.length && i < scenarioIds.length; i++) {
+    for (let i = 0; i < resolutions.length && i < scenarios.length; i++) {
       const resolution = resolutions[i]
-      const scenarioId = scenarioIds[i]
+      const scenario = scenarios[i]
+      const scenarioId = scenarioMap.get(scenario.title)
 
-      await insertResolution(
-        scenarioId,
-        resolution.steps,
-        resolution.stepType,
-      )
+      if (!scenarioId) {
+        console.log(
+          `⚠️  Skipping resolution for "${scenario.title}" - scenario not found in database`,
+        )
+        continue
+      }
+
+      await insertResolution(scenarioId, resolution.steps, resolution.stepType)
 
       console.log(
-        `✓ Inserted resolution for scenario ID ${scenarioId} (${scenarios[i].title})`,
+        `✓ Inserted resolution for scenario ID ${scenarioId} (${scenario.title})`,
       )
     }
 

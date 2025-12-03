@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { recordFeedback } from '@/lib/db'
+import { recordFeedback, closePool } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,12 +10,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 })
     }
 
-    if (!scenarioId || typeof scenarioId !== 'number' || !Number.isInteger(scenarioId)) {
-      return NextResponse.json({ error: 'Invalid scenario ID' }, { status: 400 })
+    if (
+      !scenarioId ||
+      typeof scenarioId !== 'number' ||
+      !Number.isInteger(scenarioId)
+    ) {
+      return NextResponse.json(
+        { error: 'Invalid scenario ID' },
+        { status: 400 },
+      )
     }
 
     if (rating !== 1 && rating !== -1) {
-      return NextResponse.json({ error: 'Rating must be 1 or -1' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Rating must be 1 or -1' },
+        { status: 400 },
+      )
     }
 
     await recordFeedback(query.trim(), scenarioId, rating)
@@ -27,5 +37,7 @@ export async function POST(request: NextRequest) {
       { error: 'Internal server error' },
       { status: 500 },
     )
+  } finally {
+    await closePool()
   }
 }

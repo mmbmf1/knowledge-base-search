@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateEmbedding } from '@/lib/embeddings'
-import { searchSimilarScenarios } from '@/lib/db'
+import { searchSimilarScenarios, closePool } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,10 +8,7 @@ export async function POST(request: NextRequest) {
     const { query } = body
 
     if (!query || typeof query !== 'string' || query.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Query is required' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Query is required' }, { status: 400 })
     }
 
     const queryEmbedding = await generateEmbedding(query.trim())
@@ -24,5 +21,7 @@ export async function POST(request: NextRequest) {
       { error: 'Internal server error' },
       { status: 500 },
     )
+  } finally {
+    await closePool()
   }
 }
