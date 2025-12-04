@@ -360,14 +360,16 @@ const resolutions = [
       'Plug the power adapter back into the wall outlet firmly',
       'Wait for the power light to turn green (may take 1-2 minutes)',
       'If light remains red, try a different power outlet',
+      'Refer to Router Model X-2000 for light status guide and troubleshooting',
       'If still red after trying different outlet, the router may need replacement - contact support',
     ],
     stepType: 'numbered' as const,
   },
   {
     steps: [
-      'Check for any service outages in your area on the ISP website',
+      'Check for any service outages in your area - view Area Outage - Downtown map if applicable',
       'Verify your account is active and in good standing',
+      'Check Router Model X-2000 specifications for default settings',
       'Ensure all Ethernet cables are securely connected to the router',
       'Power cycle the router by unplugging for 30 seconds and plugging back in',
       'Wait 2-3 minutes for the router to fully boot and attempt connection',
@@ -377,11 +379,11 @@ const resolutions = [
   },
   {
     steps: [
-      'Check all router status lights - note which ones are on/off',
+      'Check all router status lights - refer to ONT Light Status Guide for light meanings',
       'Verify all cable connections are secure (power, Ethernet, fiber)',
       'Power cycle the router: unplug for 30 seconds, then plug back in',
       'Wait 2-3 minutes for router to fully restart',
-      'Check for service outages in your area',
+      'Check for service outages in your area - view outage map if available',
       'Try connecting a device directly to the router via Ethernet cable',
       'If still no connection, contact ISP support for authentication reset',
     ],
@@ -390,6 +392,7 @@ const resolutions = [
   {
     steps: [
       'Test internet speed using a wired connection (eliminates WiFi issues)',
+      'Refer to Speed Test Reference for interpreting speed test results',
       'Check for bandwidth-heavy applications running in background',
       'Verify your service plan limits match expected speeds',
       'Restart the router to clear any congestion',
@@ -461,6 +464,8 @@ const resolutions = [
       'Test the outlet with another device to verify power',
       'Inspect power adapter for damage or loose connections',
       'Try a different power outlet if available',
+      'Refer to ONT Model F-500 for specifications and troubleshooting',
+      'Check ONT Light Status Guide for light status meanings',
       'Check for any ONT status lights (even if power light is off)',
       'If no lights at all, ONT may need replacement - contact ISP support',
     ],
@@ -468,13 +473,14 @@ const resolutions = [
   },
   {
     steps: [
+      'Refer to Router Admin Access Guide for default IP addresses and access steps',
       'Verify you are using the correct router IP address (usually 192.168.1.1 or 192.168.0.1)',
+      'Check Router Model X-2000 for default admin credentials',
       'Ensure you are connected to the router network (wired or WiFi)',
       'Try accessing from a different device or browser',
       'Clear browser cache and cookies',
       'Try accessing via HTTP instead of HTTPS (or vice versa)',
       'Perform router factory reset if credentials are unknown (will erase settings)',
-      'Check router manual for default admin credentials',
     ],
     stepType: 'numbered' as const,
   },
@@ -649,8 +655,10 @@ const resolutions = [
   {
     steps: [
       'Log into your ISP account portal or call customer service',
+      'Check Account Status Codes reference guide for account status',
       'Check account balance and verify any past due amounts',
       'Review recent payment history for failed transactions',
+      'Refer to Customer Service Policy - Refunds for refund eligibility',
       'Update payment method if card expired or invalid',
       'Make payment for any outstanding balance',
       'Verify account information is current and accurate',
@@ -678,7 +686,8 @@ const resolutions = [
   },
   {
     steps: [
-      'Check ONT status lights - low signal may show amber/red indicators',
+      'Check ONT status lights - refer to ONT Light Status Guide for light meanings',
+      'Check ONT Model F-500 for light status indicators and troubleshooting',
       'Inspect fiber cable for any visible damage, kinks, or tight bends',
       'Ensure fiber connector is fully seated in ONT port',
       'Check that fiber cable is not bent beyond minimum radius (usually 2 inches)',
@@ -857,8 +866,9 @@ const resolutions = [
   {
     steps: [
       'Check current equipment on customer account',
-      'Review available equipment upgrade options',
+      'Review available equipment upgrade options - check Router Model X-2000, ONT Model F-500, or Modem Model C-300 specifications',
       'Explain differences between current and new equipment',
+      'Refer to Equipment Replacement Policy for upgrade procedures',
       'Discuss upgrade costs or equipment rental fees',
       'Schedule equipment swap appointment if needed',
       'Arrange for new equipment delivery',
@@ -870,9 +880,12 @@ const resolutions = [
   {
     steps: [
       'Check outage reporting system for customer area',
+      'Check for Planned Maintenance Outage or Network Node Failure in affected areas',
+      'View Area Outage - Downtown map if downtown area is affected',
       'Verify if there are any known outages or maintenance',
       'Check customer account status for service issues',
       'Review any scheduled maintenance in area',
+      'Refer to Credit Policy - Service Issues for outage credit eligibility',
       'Provide estimated restoration time if outage confirmed',
       'Create service ticket if no known outage found',
       'If technician visit is needed, create a Service Call work order',
@@ -896,6 +909,7 @@ const resolutions = [
   {
     steps: [
       'Review customer contract terms and end date',
+      'Refer to Service Disconnection Policy for disconnection procedures',
       'Calculate remaining contract time',
       'Explain early termination fee structure if applicable',
       'Check for any contract buyout or waiver programs',
@@ -922,6 +936,7 @@ const resolutions = [
   {
     steps: [
       'Review disputed charges on billing statement',
+      'Refer to Customer Service Policy - Refunds for refund eligibility and procedures',
       'Investigate charge history and account activity',
       'Check for billing errors or system issues',
       'Verify if charges are legitimate or incorrect',
@@ -962,6 +977,7 @@ const resolutions = [
   {
     steps: [
       'Verify equipment on customer account',
+      'Refer to Equipment Replacement Policy for replacement criteria and procedures',
       'Check if equipment return is required (cancellation) or replacement needed',
       'If return is required, create a Return of Equipment work order',
       'Process return authorization and generate return label',

@@ -1,5 +1,6 @@
 /**
- * Run database migration for work orders
+ * Run database migration
+ * Usage: tsx scripts/run-migration.ts [migration-file.sql]
  */
 
 import { pool, closePool } from '../lib/db'
@@ -7,10 +8,19 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 async function runMigration() {
-  console.log('Running work order migration...')
+  // Get migration file from command line argument or use default
+  let migrationFile = process.argv[2] || 'migrate-work-orders.sql'
+  
+  // Remove 'scripts/' prefix if present
+  if (migrationFile.startsWith('scripts/')) {
+    migrationFile = migrationFile.replace('scripts/', '')
+  }
+  
+  const migrationPath = join(__dirname, migrationFile)
+
+  console.log(`Running migration: ${migrationFile}...`)
 
   try {
-    const migrationPath = join(__dirname, 'migrate-work-orders.sql')
     const migrationSQL = readFileSync(migrationPath, 'utf-8')
 
     // Remove comments

@@ -31,7 +31,7 @@ export interface Scenario {
   id: number
   title: string
   description: string
-  type?: 'scenario' | 'work_order'
+  type?: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference'
   metadata?: Record<string, any>
   similarity?: number
   helpful_count?: number
@@ -50,13 +50,13 @@ export interface Resolution {
  * Search for similar scenarios using cosine similarity
  * @param embedding - 384-dimensional embedding vector
  * @param limit - Maximum number of results to return (default: 5)
- * @param type - Optional filter by type ('scenario' or 'work_order')
+ * @param type - Optional filter by type
  * @returns Array of scenarios with similarity scores
  */
 export async function searchSimilarScenarios(
   embedding: number[],
   limit: number = 5,
-  type?: 'scenario' | 'work_order',
+  type?: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference',
 ): Promise<Scenario[]> {
   const typeFilter = type ? 'AND s.type = $3' : ''
   const params = type
@@ -118,14 +118,14 @@ export async function searchSimilarScenarios(
  * @param title - Scenario title
  * @param description - Scenario description
  * @param embedding - 384-dimensional embedding vector
- * @param type - Type of entry ('scenario' or 'work_order', default: 'scenario')
+ * @param type - Type of entry (default: 'scenario')
  * @param metadata - Optional metadata (JSON object)
  */
 export async function insertScenario(
   title: string,
   description: string,
   embedding: number[],
-  type: 'scenario' | 'work_order' = 'scenario',
+  type: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference' = 'scenario',
   metadata: Record<string, any> = {},
 ): Promise<void> {
   const query = `
@@ -290,6 +290,60 @@ export async function getAllWorkOrderNames(): Promise<string[]> {
     return result.rows.map((row: { title: string }) => row.title)
   } catch (error) {
     console.error('Error fetching work order names:', error)
+    throw error
+  }
+}
+
+/**
+ * Get knowledge base item by name and type
+ * @param name - The name/title of the item
+ * @param type - The type of knowledge base item
+ * @returns Scenario object, or null if not found
+ */
+export async function getKnowledgeBaseItemByName(
+  name: string,
+  type: 'equipment' | 'outage' | 'policy' | 'reference',
+): Promise<Scenario | null> {
+  const query = `
+    SELECT id, title, description, type, metadata
+    FROM isp_support.scenarios
+    WHERE type = $1 AND title = $2
+    LIMIT 1
+  `
+
+  try {
+    const result = await pool.query(query, [type, name])
+    if (result.rows.length === 0) {
+      return null
+    }
+
+    return result.rows[0]
+  } catch (error) {
+    console.error(`Error fetching ${type}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Get all names for a specific knowledge base type
+ * @param type - The type of knowledge base item
+ * @returns Array of names
+ */
+export async function getAllKnowledgeBaseNames(
+  type: 'equipment' | 'outage' | 'policy' | 'reference',
+): Promise<string[]> {
+  const query = `
+    SELECT title
+    FROM isp_support.scenarios
+    WHERE type = $1
+    ORDER BY title
+  `
+
+  try {
+    const result = await pool.query(query, [type])
+    return result.rows.map((row: { title: string }) => row.title)
+  } catch (error) {
+    console.error(`Error fetching ${type} names:`, error)
     throw error
   }
 }

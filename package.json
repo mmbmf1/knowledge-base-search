@@ -14,7 +14,12 @@
     "seed": "tsx scripts/seed.ts",
     "seed:feedback": "tsx scripts/seed-feedback.ts",
     "seed:work-orders": "tsx scripts/seed-work-orders.ts",
-    "migrate:work-orders": "tsx scripts/run-migration.ts"
+    "seed:equipment": "tsx scripts/seed-equipment.ts",
+    "seed:outages": "tsx scripts/seed-outages.ts",
+    "seed:policies": "tsx scripts/seed-policies.ts",
+    "seed:references": "tsx scripts/seed-references.ts",
+    "migrate:work-orders": "tsx scripts/run-migration.ts",
+    "migrate:new-types": "tsx scripts/run-migration.ts scripts/migrate-new-types.sql"
   },
   "dependencies": {
     "@heroicons/react": "2.2.0",
