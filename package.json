@@ -15,7 +15,7 @@
     "seed:feedback": "tsx scripts/seed-feedback.ts"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
+    "@heroicons/react": "2.2.0",
     "@huggingface/transformers": "3.8.1",
     "@types/pg": "8.15.6",
     "dotenv": "17.2.3",
