@@ -134,7 +134,7 @@ export default function Home() {
               Troubleshooting Search
             </h1>
             <p className="text-slate-600">
-              Find solutions for common ISP issues
+              Search knowledge base for troubleshooting solutions
             </p>
           </div>
 
