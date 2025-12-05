@@ -13,11 +13,3 @@
 7. Start dev server: `npm run dev`
 
 Open [http://localhost:3000](http://localhost:3000)
-
-## Scripts
-
-- `npm run dev` - Development server
-- `npm run migrate` - Run database migrations
-- `npm run seed` - Seed all data
-- `npm run docker:up` - Start database
-- `npm run docker:down` - Stop database
