@@ -31,7 +31,7 @@ export interface Scenario {
   id: number
   title: string
   description: string
-  type?: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference'
+  type?: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference' | 'subscriber'
   metadata?: Record<string, any>
   similarity?: number
   helpful_count?: number
@@ -56,7 +56,7 @@ export interface Resolution {
 export async function searchSimilarScenarios(
   embedding: number[],
   limit: number = 5,
-  type?: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference',
+  type?: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference' | 'subscriber',
 ): Promise<Scenario[]> {
   const typeFilter = type ? 'AND s.type = $3' : ''
   const params = type
@@ -125,7 +125,7 @@ export async function insertScenario(
   title: string,
   description: string,
   embedding: number[],
-  type: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference' = 'scenario',
+  type: 'scenario' | 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference' | 'subscriber' = 'scenario',
   metadata: Record<string, any> = {},
 ): Promise<void> {
   const query = `
@@ -302,7 +302,7 @@ export async function getAllWorkOrderNames(): Promise<string[]> {
  */
 export async function getKnowledgeBaseItemByName(
   name: string,
-  type: 'equipment' | 'outage' | 'policy' | 'reference',
+  type: 'equipment' | 'outage' | 'policy' | 'reference' | 'subscriber',
 ): Promise<Scenario | null> {
   const query = `
     SELECT id, title, description, type, metadata
@@ -330,7 +330,7 @@ export async function getKnowledgeBaseItemByName(
  * @returns Array of names
  */
 export async function getAllKnowledgeBaseNames(
-  type: 'equipment' | 'outage' | 'policy' | 'reference',
+  type: 'equipment' | 'outage' | 'policy' | 'reference' | 'subscriber',
 ): Promise<string[]> {
   const query = `
     SELECT title

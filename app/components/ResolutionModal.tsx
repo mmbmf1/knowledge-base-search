@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import ScheduleWorkOrderModal from './ScheduleWorkOrderModal'
 import KnowledgeBaseItemDisplay from './KnowledgeBaseItemDisplay'
+import UpdateSubscriberModal from './UpdateSubscriberModal'
 
 interface ResolutionModalProps {
   title: string
@@ -26,11 +27,11 @@ interface KnowledgeBaseItem {
   id: number
   title: string
   description: string
-  type: 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference'
+  type: 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference' | 'subscriber'
   metadata?: Record<string, any>
 }
 
-type KnowledgeBaseType = 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference'
+type KnowledgeBaseType = 'work_order' | 'equipment' | 'outage' | 'policy' | 'reference' | 'subscriber'
 
 interface TypeNames {
   work_order: string[]
@@ -38,6 +39,7 @@ interface TypeNames {
   outage: string[]
   policy: string[]
   reference: string[]
+  subscriber: string[]
 }
 
 export default function ResolutionModal({
@@ -56,24 +58,28 @@ export default function ResolutionModal({
     outage: [],
     policy: [],
     reference: [],
+    subscriber: [],
   })
   const [selectedItem, setSelectedItem] = useState<KnowledgeBaseItem | null>(
     null,
   )
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+  const [isUpdateSubscriberModalOpen, setIsUpdateSubscriberModalOpen] =
+    useState(false)
 
   useEffect(() => {
     if (isOpen) {
       // Fetch all knowledge base type names
       const fetchAllNames = async () => {
         try {
-          const [workOrders, equipment, outages, policies, references] =
+          const [workOrders, equipment, outages, policies, references, subscribers] =
             await Promise.all([
               fetch('/api/work-order').then((r) => r.json()),
               fetch('/api/knowledge-base?type=equipment').then((r) => r.json()),
               fetch('/api/knowledge-base?type=outage').then((r) => r.json()),
               fetch('/api/knowledge-base?type=policy').then((r) => r.json()),
               fetch('/api/knowledge-base?type=reference').then((r) => r.json()),
+              fetch('/api/knowledge-base?type=subscriber').then((r) => r.json()),
             ])
 
           setTypeNames({
@@ -82,6 +88,7 @@ export default function ResolutionModal({
             outage: outages.names || [],
             policy: policies.names || [],
             reference: references.names || [],
+            subscriber: subscribers.names || [],
           })
         } catch (err) {
           console.error('Failed to fetch knowledge base names:', err)
@@ -143,6 +150,12 @@ export default function ResolutionModal({
             new RegExp(`\\b(${escapedName})\\b`, 'i'),
           ]
           break
+        case 'subscriber':
+          patterns = [
+            new RegExp(`\\b(use|update|check|refer to)\\s+(the\\s+)?(${escapedName})\\b`, 'i'),
+            new RegExp(`\\b(${escapedName})\\b`, 'i'),
+          ]
+          break
       }
 
       for (const pattern of patterns) {
@@ -186,6 +199,7 @@ export default function ResolutionModal({
       'outage',
       'policy',
       'reference',
+      'subscriber',
     ]
 
     for (const type of types) {
@@ -304,6 +318,11 @@ export default function ResolutionModal({
                   ? () => setIsScheduleModalOpen(true)
                   : undefined
               }
+              onUpdateSubscriber={
+                selectedItem.type === 'subscriber'
+                  ? () => setIsUpdateSubscriberModalOpen(true)
+                  : undefined
+              }
             />
           )}
         </div>
@@ -355,6 +374,13 @@ export default function ResolutionModal({
           isOpen={isScheduleModalOpen}
           onClose={() => setIsScheduleModalOpen(false)}
           workOrder={selectedItem}
+        />
+      )}
+      {selectedItem && selectedItem.type === 'subscriber' && (
+        <UpdateSubscriberModal
+          isOpen={isUpdateSubscriberModalOpen}
+          onClose={() => setIsUpdateSubscriberModalOpen(false)}
+          subscriber={selectedItem}
         />
       )}
     </div>

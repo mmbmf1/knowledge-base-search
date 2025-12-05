@@ -5,13 +5,14 @@ import {
   MapIcon,
   DocumentTextIcon,
   CalendarIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline'
 
 interface KnowledgeBaseItem {
   id: number
   title: string
   description: string
-  type: 'equipment' | 'outage' | 'policy' | 'reference' | 'work_order'
+  type: 'equipment' | 'outage' | 'policy' | 'reference' | 'work_order' | 'subscriber'
   metadata?: Record<string, any>
 }
 
@@ -19,12 +20,14 @@ interface KnowledgeBaseItemDisplayProps {
   item: KnowledgeBaseItem
   onClose: () => void
   onScheduleWorkOrder?: () => void
+  onUpdateSubscriber?: () => void
 }
 
 export default function KnowledgeBaseItemDisplay({
   item,
   onClose,
   onScheduleWorkOrder,
+  onUpdateSubscriber,
 }: KnowledgeBaseItemDisplayProps) {
   const renderMetadata = () => {
     if (!item.metadata) return null
@@ -381,6 +384,67 @@ export default function KnowledgeBaseItemDisplay({
           </div>
         )
 
+      case 'subscriber':
+        return (
+          <div className="space-y-3">
+            {item.metadata.fields && (
+              <div>
+                <h5 className="text-sm font-semibold text-blue-900 mb-2">
+                  Data Fields
+                </h5>
+                <div className="space-y-1 text-sm">
+                  {Object.entries(item.metadata.fields).map(
+                    ([fieldName, fieldData]: [string, any]) => (
+                      <div key={fieldName}>
+                        <span className="text-blue-600 font-medium capitalize">
+                          {fieldName.replace(/([A-Z])/g, ' $1').trim()}:{' '}
+                        </span>
+                        <span className="text-blue-800">
+                          {fieldData.required ? 'Required' : 'Optional'} •{' '}
+                          {fieldData.format}
+                        </span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+            {item.metadata.updateProcedures && (
+              <div>
+                <h5 className="text-sm font-semibold text-blue-900 mb-2">
+                  Update Procedures
+                </h5>
+                <ul className="list-disc list-inside text-sm text-blue-800 space-y-1">
+                  {item.metadata.updateProcedures.map(
+                    (procedure: string, idx: number) => (
+                      <li key={idx}>{procedure}</li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            )}
+            {item.metadata.validationRules && (
+              <div>
+                <h5 className="text-sm font-semibold text-blue-900 mb-2">
+                  Validation Rules
+                </h5>
+                <div className="space-y-1 text-sm">
+                  {Object.entries(item.metadata.validationRules).map(
+                    ([field, rule]) => (
+                      <div key={field}>
+                        <span className="text-blue-600 font-medium capitalize">
+                          {field}:{' '}
+                        </span>
+                        <span className="text-blue-800">{String(rule)}</span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )
+
       default:
         return null
     }
@@ -433,6 +497,15 @@ export default function KnowledgeBaseItemDisplay({
         >
           <CalendarIcon className="w-5 h-5" />
           Schedule Work Order
+        </button>
+      )}
+      {item.type === 'subscriber' && onUpdateSubscriber && (
+        <button
+          onClick={onUpdateSubscriber}
+          className="w-full mt-3 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+        >
+          <UserIcon className="w-5 h-5" />
+          Update Subscriber Data
         </button>
       )}
     </div>

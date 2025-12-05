@@ -802,6 +802,8 @@ const resolutions = [
     steps: [
       'Review customer current plan and service tier',
       'Check available upgrade options for their area',
+      'Create a Change of Service work order if upgrade requires installation or equipment changes',
+      'Use Subscriber Data Fields to update service preferences and plan details',
       'Explain speed differences between current and upgrade tiers',
       'Discuss pricing and any promotional rates available',
       'Review contract terms if upgrade requires new agreement',
@@ -815,7 +817,10 @@ const resolutions = [
     steps: [
       'Review customer current plan details',
       'Check available lower tier options',
+      'Create a Change of Service work order for downgrade',
+      'Use Subscriber Data Fields to update service plan and preferences',
       'Explain speed and feature differences with downgrade',
+      'Refer to Service Disconnection Policy for contract implications',
       'Discuss any contract implications or early termination fees',
       'Confirm customer understands potential service changes',
       'Process downgrade request',
@@ -827,12 +832,14 @@ const resolutions = [
   {
     steps: [
       'Check customer account status and tenure',
+      'Check Account Status Codes reference guide for account eligibility',
       'Review current promotions available for their account',
       'Explain promotion terms and conditions',
       'Discuss any contract requirements for promotional pricing',
       'Compare promotional pricing to current plan',
       'Check eligibility for new customer or retention offers',
       'Apply applicable promotion if customer agrees',
+      'Use Subscriber Data Fields to update promotional pricing if applied',
       'Confirm promotion details and duration',
     ],
     stepType: 'numbered' as const,
@@ -840,6 +847,7 @@ const resolutions = [
   {
     steps: [
       'Verify customer identity with account security questions',
+      'Use Subscriber Data Fields reference guide for update procedures',
       'Access account payment settings',
       'Guide customer to payment method update section',
       'Have customer enter new payment method details',
@@ -853,12 +861,13 @@ const resolutions = [
   {
     steps: [
       'Verify service availability at new address',
+      'Use Subscriber Data Fields to update customer address information',
       'Check if installation is required at new location',
       'Schedule installation appointment if needed',
       'Discuss any transfer or installation fees',
       'Coordinate disconnect date at old address',
       'Confirm service transfer dates',
-      'Update account with new service address',
+      'Update account with new service address using subscriber data update form',
       'Provide customer with move confirmation and contact info',
     ],
     stepType: 'numbered' as const,
@@ -924,10 +933,12 @@ const resolutions = [
     steps: [
       'Review customer current services',
       'Check available bundle options (Internet + TV + Phone)',
+      'Create a Change of Service work order if bundle requires service changes',
       'Compare bundle pricing vs individual service costs',
       'Explain bundle features and benefits',
       'Discuss contract requirements for bundles',
       'Calculate potential savings with bundle',
+      'Use Subscriber Data Fields to update service bundle preferences',
       'Process bundle setup if customer interested',
       'Schedule any necessary installations',
     ],
@@ -950,6 +961,7 @@ const resolutions = [
   {
     steps: [
       'Verify payment method is on file and valid',
+      'Use Subscriber Data Fields to update auto-pay preferences and payment settings',
       'Explain auto-pay benefits and convenience',
       'Set up automatic payment from payment method',
       'Confirm payment date (usually billing date)',

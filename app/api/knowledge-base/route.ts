@@ -8,12 +8,13 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const name = searchParams.get('name')
-    const type = searchParams.get('type') as
-      | 'equipment'
-      | 'outage'
-      | 'policy'
-      | 'reference'
-      | null
+        const type = searchParams.get('type') as
+          | 'equipment'
+          | 'outage'
+          | 'policy'
+          | 'reference'
+          | 'subscriber'
+          | null
 
     if (!type) {
       return NextResponse.json(
