@@ -10,18 +10,18 @@ import { join } from 'path'
 async function runMigration() {
   // Get migration file from command line argument
   let migrationFile = process.argv[2]
-  
+
   if (!migrationFile) {
     console.error('Error: Migration file is required')
     console.error('Usage: tsx scripts/run-migration.ts <migration-file.sql>')
     process.exit(1)
   }
-  
+
   // Remove 'scripts/' prefix if present
   if (migrationFile.startsWith('scripts/')) {
     migrationFile = migrationFile.replace('scripts/', '')
   }
-  
+
   const migrationPath = join(__dirname, migrationFile)
 
   console.log(`Running migration: ${migrationFile}...`)

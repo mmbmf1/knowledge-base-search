@@ -33,6 +33,7 @@ interface SearchResult {
     | 'subscriber'
   metadata?: Record<string, any>
   helpful_count?: number
+  not_helpful_count?: number
   total_feedback?: number
   helpful_percentage?: number
   sourceQuery?: string
@@ -98,7 +99,18 @@ export default function Home() {
     Record<string, SearchResult[]>
   >({})
   const [loadingHelpfulSearches, setLoadingHelpfulSearches] = useState(false)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error'
+  } | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  const exampleQueries = [
+    'wifi password not working',
+    'router light is red',
+    'no internet connection',
+    'slow internet speed',
+  ]
 
   const fetchSearchResults = async (
     searchQuery: string,
@@ -261,7 +273,12 @@ export default function Home() {
 
     if (response.ok) {
       setRatedScenarios(new Set([...ratedScenarios, scenarioId]))
+      setToast({ message: 'Thank you for your feedback!', type: 'success' })
+      setTimeout(() => setToast(null), 3000)
       Promise.all([fetchHelpfulSearches(), refreshSearchResults()])
+    } else {
+      setToast({ message: 'Failed to submit feedback', type: 'error' })
+      setTimeout(() => setToast(null), 3000)
     }
   }
 
@@ -360,6 +377,37 @@ export default function Home() {
           </div>
 
           <form onSubmit={handleSearch} className="space-y-4">
+            {!query && exampleQueries.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                <span className="text-sm text-slate-600 mr-2">Try:</span>
+                {exampleQueries.map((example) => (
+                  <button
+                    key={example}
+                    type="button"
+                    onClick={async () => {
+                      setQuery(example)
+                      setLoading(true)
+                      setError(null)
+                      setResults([])
+                      try {
+                        setResults(await fetchSearchResults(example))
+                      } catch (err) {
+                        setError(
+                          err instanceof Error
+                            ? err.message
+                            : 'An error occurred',
+                        )
+                      } finally {
+                        setLoading(false)
+                      }
+                    }}
+                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full border border-blue-200 hover:border-blue-300 transition-colors"
+                  >
+                    {example}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="flex gap-3">
               <div className="flex-1 relative">
                 <input
@@ -441,14 +489,16 @@ export default function Home() {
                         <h3 className="text-xl font-semibold text-slate-800">
                           {result.title}
                         </h3>
-                        {result.helpful_percentage != null &&
-                          result.total_feedback != null &&
-                          result.total_feedback > 0 && (
-                            <div className="px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">
-                              {result.helpful_percentage}% (
-                              {result.total_feedback})
-                            </div>
-                          )}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">
+                            <HandThumbUpIcon className="w-4 h-4" />
+                            <span>{result.helpful_count || 0}</span>
+                          </div>
+                          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-medium">
+                            <HandThumbDownIcon className="w-4 h-4" />
+                            <span>{result.not_helpful_count || 0}</span>
+                          </div>
+                        </div>
                       </div>
                       <p className="text-slate-600 leading-relaxed">
                         {result.description}
@@ -686,6 +736,32 @@ export default function Home() {
           onClose={() => setIsUpdateSubscriberModalOpen(false)}
           subscriber={selectedItem}
         />
+      )}
+
+      {toast && (
+        <div
+          className={`fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 ${
+            toast.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {toast.type === 'success' ? (
+              <CheckCircleIcon className="w-5 h-5" />
+            ) : (
+              <XMarkIcon className="w-5 h-5" />
+            )}
+            <span className="font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-2 text-slate-400 hover:text-slate-600"
+              aria-label="Dismiss"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

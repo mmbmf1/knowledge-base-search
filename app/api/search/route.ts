@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateEmbedding } from '@/lib/embeddings'
 import { searchSimilarScenarios, logSearch } from '@/lib/db'
+import { getIndustryConfig } from '@/lib/industry-config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,15 +14,23 @@ export async function POST(request: NextRequest) {
     const trimmedQuery = query.trim()
     logSearch(trimmedQuery).catch(() => {})
 
+    const industryConfig = getIndustryConfig()
     const queryEmbedding = await generateEmbedding(trimmedQuery)
     const results = await searchSimilarScenarios(
       queryEmbedding,
       5,
       (type || 'scenario') as 'scenario' | 'work_order',
+      industryConfig.industry,
     )
 
     return NextResponse.json({ results })
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Search error:', error)
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      { status: 500 },
+    )
   }
 }

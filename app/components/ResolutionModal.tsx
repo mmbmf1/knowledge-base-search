@@ -13,6 +13,7 @@ import {
 import ScheduleWorkOrderModal from './ScheduleWorkOrderModal'
 import KnowledgeBaseItemDisplay from './KnowledgeBaseItemDisplay'
 import UpdateSubscriberModal from './UpdateSubscriberModal'
+import { industryConfig } from '@/lib/industry-config'
 
 interface ResolutionModalProps {
   title: string
@@ -143,46 +144,39 @@ export default function ResolutionModal({
           const addedTypes = new Set<string>()
 
           steps.forEach((step) => {
-            const resetRouterMatch = step.match(/\b(reset|restart).*router\b/i)
-            const speedTestMatch =
-              step.match(
-                /\b(run|perform|execute|speed\s+test).*speed\s+test\b/i,
-              ) || step.match(/\bspeed\s+test\b/i)
-            const restartEquipmentMatch = step.match(
-              /\b(restart|reboot).*(?:equipment|ONT|modem)\b/i,
-            )
+            industryConfig.actions.forEach((actionConfig) => {
+              if (addedTypes.has(actionConfig.type)) return
 
-            if (resetRouterMatch && !addedTypes.has('reset-router')) {
-              actions.push({
-                type: 'reset-router',
-                label: 'Reset Router',
-                params: { equipmentName: names.equipment[0] || 'Router' },
-                icon: <BoltIcon className="w-4 h-4" />,
-              })
-              addedTypes.add('reset-router')
-            } else if (speedTestMatch && !addedTypes.has('speed-test')) {
-              actions.push({
-                type: 'speed-test',
-                label: 'Speed Test',
-                params: { subscriberName: names.subscriber[0] || 'Subscriber' },
-                icon: <BoltIcon className="w-4 h-4" />,
-              })
-              addedTypes.add('speed-test')
-            } else if (
-              restartEquipmentMatch &&
-              !addedTypes.has('restart-equipment')
-            ) {
-              actions.push({
-                type: 'restart-equipment',
-                label: 'Restart Equipment',
-                params: {
-                  equipmentName: names.equipment[0] || 'Equipment',
-                  equipmentType: 'ONT',
-                },
-                icon: <ArrowPathIcon className="w-4 h-4" />,
-              })
-              addedTypes.add('restart-equipment')
-            }
+              const matches = actionConfig.patterns.some((pattern) =>
+                pattern.test(step),
+              )
+
+              if (matches) {
+                const iconMap: Record<string, React.ReactNode> = {
+                  'reset-router': <BoltIcon className="w-4 h-4" />,
+                  'speed-test': <BoltIcon className="w-4 h-4" />,
+                  'restart-equipment': <ArrowPathIcon className="w-4 h-4" />,
+                }
+
+                const params: Record<string, any> = {}
+                if (actionConfig.type === 'reset-router' || actionConfig.type === 'restart-equipment') {
+                  params.equipmentName = names.equipment[0] || 'Equipment'
+                  if (actionConfig.type === 'restart-equipment') {
+                    params.equipmentType = 'ONT'
+                  }
+                } else if (actionConfig.type === 'speed-test') {
+                  params.subscriberName = names.subscriber[0] || 'Subscriber'
+                }
+
+                actions.push({
+                  type: actionConfig.type,
+                  label: actionConfig.label,
+                  params,
+                  icon: iconMap[actionConfig.type] || <BoltIcon className="w-4 h-4" />,
+                })
+                addedTypes.add(actionConfig.type)
+              }
+            })
           })
           setAvailableActions(actions)
         },
@@ -303,8 +297,11 @@ export default function ResolutionModal({
       '',
     )
 
+    const actionConfig = industryConfig.actions.find((a) => a.type === actionType)
+    const apiRoute = actionConfig?.apiRoute || `/api/actions/${actionType}`
+
     try {
-      const response = await fetch(`/api/actions/${actionType}`, {
+      const response = await fetch(apiRoute, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
