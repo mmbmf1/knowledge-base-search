@@ -3,7 +3,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import { insertScenario, closePool, pool } from '../lib/db'
+import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 const policies = [
   {
@@ -99,8 +99,9 @@ async function seedPolicies() {
   console.log(`Processing ${policies.length} policies...`)
 
   try {
+    const schema = getSchemaName()
     const existingPolicies = await pool.query(
-      "SELECT title FROM isp_support.scenarios WHERE type = 'policy'",
+      `SELECT title FROM ${schema}.scenarios WHERE type = 'policy'`,
     )
     const existingTitles = new Set(
       existingPolicies.rows.map((row: { title: string }) => row.title),

@@ -3,7 +3,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import { insertScenario, closePool, pool } from '../lib/db'
+import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 const outages = [
   {
@@ -90,8 +90,9 @@ async function seedOutages() {
   console.log(`Processing ${outages.length} outages...`)
 
   try {
+    const schema = getSchemaName()
     const existingOutages = await pool.query(
-      "SELECT title FROM isp_support.scenarios WHERE type = 'outage'",
+      `SELECT title FROM ${schema}.scenarios WHERE type = 'outage'`,
     )
     const existingTitles = new Set(
       existingOutages.rows.map((row: { title: string }) => row.title),

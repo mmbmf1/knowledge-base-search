@@ -3,7 +3,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import { insertScenario, closePool, pool } from '../lib/db'
+import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 // Work order data
 const workOrders = [
@@ -245,9 +245,10 @@ async function seedWorkOrders() {
   console.log(`Processing ${workOrders.length} work orders...`)
 
   try {
+    const schema = getSchemaName()
     // Check which work orders already exist
     const existingWorkOrders = await pool.query(
-      "SELECT title FROM isp_support.scenarios WHERE type = 'work_order'",
+      `SELECT title FROM ${schema}.scenarios WHERE type = 'work_order'`,
     )
     const existingTitles = new Set(
       existingWorkOrders.rows.map((row: { title: string }) => row.title),

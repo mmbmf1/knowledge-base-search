@@ -54,7 +54,9 @@ export function getIndustryConfig(): IndustryConfig {
   if (typeof window !== 'undefined') {
     return ISP_CONFIG
   }
-  const industry = (process.env.INDUSTRY || 'isp') as Industry
+  const industry = (process.env.INDUSTRY ||
+    process.env.DEFAULT_INDUSTRY ||
+    'isp') as Industry
   switch (industry) {
     case 'isp':
       return ISP_CONFIG

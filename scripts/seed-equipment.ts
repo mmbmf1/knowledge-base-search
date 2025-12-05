@@ -3,7 +3,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import { insertScenario, closePool, pool } from '../lib/db'
+import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 const equipment = [
   {
@@ -86,8 +86,9 @@ async function seedEquipment() {
   console.log(`Processing ${equipment.length} equipment items...`)
 
   try {
+    const schema = getSchemaName()
     const existingEquipment = await pool.query(
-      "SELECT title FROM isp_support.scenarios WHERE type = 'equipment'",
+      `SELECT title FROM ${schema}.scenarios WHERE type = 'equipment'`,
     )
     const existingTitles = new Set(
       existingEquipment.rows.map((row: { title: string }) => row.title),

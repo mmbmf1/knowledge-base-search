@@ -3,7 +3,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import { insertScenario, closePool, pool } from '../lib/db'
+import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 const references = [
   {
@@ -141,8 +141,9 @@ async function seedReferences() {
   console.log(`Processing ${references.length} references...`)
 
   try {
+    const schema = getSchemaName()
     const existingReferences = await pool.query(
-      "SELECT title FROM isp_support.scenarios WHERE type = 'reference'",
+      `SELECT title FROM ${schema}.scenarios WHERE type = 'reference'`,
     )
     const existingTitles = new Set(
       existingReferences.rows.map((row: { title: string }) => row.title),

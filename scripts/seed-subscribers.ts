@@ -3,7 +3,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import { insertScenario, closePool, pool } from '../lib/db'
+import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 const subscribers = [
   {
@@ -72,8 +72,9 @@ async function seedSubscribers() {
   console.log(`Processing ${subscribers.length} subscriber references...`)
 
   try {
+    const schema = getSchemaName()
     const existingSubscribers = await pool.query(
-      "SELECT title FROM isp_support.scenarios WHERE type = 'subscriber'",
+      `SELECT title FROM ${schema}.scenarios WHERE type = 'subscriber'`,
     )
     const existingTitles = new Set(
       existingSubscribers.rows.map((row: { title: string }) => row.title),

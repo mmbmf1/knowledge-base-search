@@ -37,6 +37,11 @@ A semantic search application for knowledge bases with vector embeddings, feedba
 
    ```bash
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/isp_support
+   DB_SCHEMA=isp_support           # Optional: Database schema name (default: isp_support)
+   DB_NAME=isp_support             # Optional: Database name for Docker (default: isp_support)
+   DB_CONTAINER_NAME=isp-support-db # Optional: Docker container name (default: isp-support-db)
+   DEFAULT_INDUSTRY=isp            # Optional: Default industry for scenarios (default: isp)
+   INDUSTRY=isp                    # Optional: Industry config to use (default: isp)
    ```
 
 3. **Start database with Docker**
@@ -84,7 +89,8 @@ This project uses Docker Compose to run PostgreSQL with the pgvector extension, 
 - **Image**: `pgvector/pgvector:pg16` (PostgreSQL 16 with pgvector)
 - **Port**: `5432` (mapped to host)
 - **Credentials**: `postgres/postgres`
-- **Database**: `isp_support`
+- **Database**: `isp_support` (configurable via `DB_NAME` env var)
+- **Schema**: `isp_support` (configurable via `DB_SCHEMA` env var)
 - **Volume**: `postgres_data` (persists data between restarts)
 
 ## Available Scripts

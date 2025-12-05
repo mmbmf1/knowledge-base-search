@@ -11,7 +11,7 @@
  */
 
 import { generateEmbedding } from '../lib/embeddings'
-import { insertScenario, insertResolution, closePool, pool } from '../lib/db'
+import { insertScenario, insertResolution, closePool, pool, getSchemaName } from '../lib/db'
 
 // Sample MSR/FTTH troubleshooting scenarios
 // Structure: { title: string, description: string }
@@ -1280,9 +1280,10 @@ async function seedDatabase() {
   console.log(`Processing ${scenarios.length} scenarios...`)
 
   try {
+    const schema = getSchemaName()
     // Check which scenarios already exist
     const existingScenarios = await pool.query(
-      'SELECT title FROM isp_support.scenarios',
+      `SELECT title FROM ${schema}.scenarios`,
     )
     const existingTitles = new Set(
       existingScenarios.rows.map((row: { title: string }) => row.title),
@@ -1311,7 +1312,7 @@ async function seedDatabase() {
 
     // Get all scenarios with their titles to match by title
     const scenarioResult = await pool.query(
-      'SELECT id, title FROM isp_support.scenarios ORDER BY id',
+      `SELECT id, title FROM ${schema}.scenarios ORDER BY id`,
     )
     const scenarioMap = new Map<string, number>()
     scenarioResult.rows.forEach((row: { id: number; title: string }) => {
