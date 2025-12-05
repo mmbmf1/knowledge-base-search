@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateEmbedding } from '@/lib/embeddings'
-import { searchSimilarScenarios, logSearch } from '@/lib/db'
+import { searchSimilarScenarios } from '@/lib/db'
 import { getIndustryConfig } from '@/lib/industry-config'
 
 export async function POST(request: NextRequest) {
@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedQuery = query.trim()
-    logSearch(trimmedQuery).catch(() => {})
 
     const industryConfig = getIndustryConfig()
     const queryEmbedding = await generateEmbedding(trimmedQuery)

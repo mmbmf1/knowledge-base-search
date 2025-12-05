@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
       message: `${equipmentType || 'Equipment'} ${equipmentName || equipmentId} restarted successfully`,
       timestamp: new Date().toISOString(),
     })
-  } catch {
-    return NextResponse.json({ error: 'Failed to restart equipment' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Failed to restart equipment' },
+      { status: 500 },
+    )
   }
 }

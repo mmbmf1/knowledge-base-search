@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
       message: `Router ${equipmentName || equipmentId} reset successfully`,
       timestamp: new Date().toISOString(),
     })
-  } catch {
-    return NextResponse.json({ error: 'Failed to reset router' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Failed to reset router' },
+      { status: 500 },
+    )
   }
 }

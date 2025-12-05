@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
       },
     })
-  } catch {
-    return NextResponse.json({ error: 'Failed to run speed test' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Failed to run speed test' },
+      { status: 500 },
+    )
   }
 }

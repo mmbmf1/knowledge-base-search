@@ -9,7 +9,10 @@ export async function POST(request: NextRequest) {
     }
     logAction(actionType, itemName, itemType, scenarioId)
     return NextResponse.json({ success: true })
-  } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Internal server error' },
+      { status: 500 },
+    )
   }
 }

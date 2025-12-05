@@ -90,6 +90,7 @@ export async function searchSimilarScenarios(
                 s.metadata,
                 1 - (s.embedding <=> $1::vector) as similarity,
                 COALESCE(SUM(CASE WHEN f.rating = 1 THEN 1 ELSE 0 END), 0)::int as helpful_count,
+                COALESCE(SUM(CASE WHEN f.rating = -1 THEN 1 ELSE 0 END), 0)::int as not_helpful_count,
                 COUNT(f.id)::int as total_feedback,
                 CASE 
                     WHEN COUNT(f.id) > 0 THEN 
@@ -450,18 +451,6 @@ export async function getAllKnowledgeBaseNames(
     console.error(`Error fetching ${type} names:`, error)
     throw error
   }
-}
-
-export async function logSearch(query: string): Promise<void> {
-  const trimmedQuery = query.trim()
-  if (!trimmedQuery) return
-
-  const logQuery = `
-    INSERT INTO isp_support.searches (query)
-    VALUES ($1)
-  `
-
-  pool.query(logQuery, [trimmedQuery]).catch(() => {})
 }
 
 export interface TopSearch {

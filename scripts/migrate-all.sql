@@ -77,17 +77,6 @@ CREATE INDEX IF NOT EXISTS scenarios_industry_idx ON isp_support.scenarios(indus
 -- Create index on metadata for queries (if not exists)
 CREATE INDEX IF NOT EXISTS scenarios_metadata_idx ON isp_support.scenarios USING GIN(metadata);
 
--- Create searches table to log all search queries
-CREATE TABLE IF NOT EXISTS isp_support.searches (
-    id SERIAL PRIMARY KEY,
-    query TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Create indexes for efficient queries
-CREATE INDEX IF NOT EXISTS searches_query_idx ON isp_support.searches(query);
-CREATE INDEX IF NOT EXISTS searches_created_at_idx ON isp_support.searches(created_at);
-
 -- Create actions table to track user interactions
 CREATE TABLE IF NOT EXISTS isp_support.actions (
     id SERIAL PRIMARY KEY,
