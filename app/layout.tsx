@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ISP Support Chat Tool',
-  description: 'Semantic search for ISP troubleshooting scenarios',
+  title: 'Knowledge Base Search',
+  description: 'Semantic search for knowledge base content',
 }
 
 export default function RootLayout({

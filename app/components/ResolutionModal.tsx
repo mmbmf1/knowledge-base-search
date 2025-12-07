@@ -1,11 +1,19 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import {
   XMarkIcon,
   HandThumbUpIcon,
   HandThumbDownIcon,
   CheckCircleIcon,
+  InformationCircleIcon,
+  ArrowPathIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline'
+import ScheduleWorkOrderModal from './ScheduleWorkOrderModal'
+import KnowledgeBaseItemDisplay from './KnowledgeBaseItemDisplay'
+import UpdateSubscriberModal from './UpdateSubscriberModal'
+import { industryConfig } from '@/lib/industry-config'
 
 interface ResolutionModalProps {
   title: string
@@ -18,6 +26,37 @@ interface ResolutionModalProps {
   isRated: boolean
 }
 
+interface KnowledgeBaseItem {
+  id: number
+  title: string
+  description: string
+  type:
+    | 'work_order'
+    | 'equipment'
+    | 'outage'
+    | 'policy'
+    | 'reference'
+    | 'subscriber'
+  metadata?: Record<string, any>
+}
+
+type KnowledgeBaseType =
+  | 'work_order'
+  | 'equipment'
+  | 'outage'
+  | 'policy'
+  | 'reference'
+  | 'subscriber'
+
+interface TypeNames {
+  work_order: string[]
+  equipment: string[]
+  outage: string[]
+  policy: string[]
+  reference: string[]
+  subscriber: string[]
+}
+
 export default function ResolutionModal({
   title,
   steps,
@@ -28,17 +67,407 @@ export default function ResolutionModal({
   onFeedback,
   isRated,
 }: ResolutionModalProps) {
+  const [typeNames, setTypeNames] = useState<TypeNames>({
+    work_order: [],
+    equipment: [],
+    outage: [],
+    policy: [],
+    reference: [],
+    subscriber: [],
+  })
+  const [selectedItem, setSelectedItem] = useState<KnowledgeBaseItem | null>(
+    null,
+  )
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+  const [isUpdateSubscriberModalOpen, setIsUpdateSubscriberModalOpen] =
+    useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [actionResults, setActionResults] = useState<Record<string, any>>({})
+  const [availableActions, setAvailableActions] = useState<
+    Array<{
+      type: string
+      label: string
+      params: Record<string, any>
+      icon: React.ReactNode
+    }>
+  >([])
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  const logAction = (
+    actionType: string,
+    itemName: string,
+    itemType: string,
+  ) => {
+    fetch('/api/actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actionType, itemName, itemType, scenarioId }),
+    }).catch(() => {})
+  }
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    Promise.all([
+      fetch('/api/work-order').then((r) => r.json()),
+      fetch('/api/knowledge-base?type=equipment').then((r) => r.json()),
+      fetch('/api/knowledge-base?type=outage').then((r) => r.json()),
+      fetch('/api/knowledge-base?type=policy').then((r) => r.json()),
+      fetch('/api/knowledge-base?type=reference').then((r) => r.json()),
+      fetch('/api/knowledge-base?type=subscriber').then((r) => r.json()),
+    ])
+      .then(
+        ([
+          workOrders,
+          equipment,
+          outages,
+          policies,
+          references,
+          subscribers,
+        ]) => {
+          const names = {
+            work_order: workOrders.names || [],
+            equipment: equipment.names || [],
+            outage: outages.names || [],
+            policy: policies.names || [],
+            reference: references.names || [],
+            subscriber: subscribers.names || [],
+          }
+          setTypeNames(names)
+
+          const actions: Array<{
+            type: string
+            label: string
+            params: Record<string, any>
+            icon: React.ReactNode
+          }> = []
+          const addedTypes = new Set<string>()
+
+          steps.forEach((step) => {
+            industryConfig.actions.forEach((actionConfig) => {
+              if (addedTypes.has(actionConfig.type)) return
+
+              const matches = actionConfig.patterns.some((pattern) =>
+                pattern.test(step),
+              )
+
+              if (matches) {
+                const iconMap: Record<string, React.ReactNode> = {
+                  'reset-router': <BoltIcon className="w-4 h-4" />,
+                  'speed-test': <BoltIcon className="w-4 h-4" />,
+                  'restart-equipment': <ArrowPathIcon className="w-4 h-4" />,
+                }
+
+                const params: Record<string, any> = {}
+                if (actionConfig.type === 'reset-router' || actionConfig.type === 'restart-equipment') {
+                  params.equipmentName = names.equipment[0] || 'Equipment'
+                  if (actionConfig.type === 'restart-equipment') {
+                    params.equipmentType = 'ONT'
+                  }
+                } else if (actionConfig.type === 'speed-test') {
+                  params.subscriberName = names.subscriber[0] || 'Subscriber'
+                }
+
+                actions.push({
+                  type: actionConfig.type,
+                  label: actionConfig.label,
+                  params,
+                  icon: iconMap[actionConfig.type] || <BoltIcon className="w-4 h-4" />,
+                })
+                addedTypes.add(actionConfig.type)
+              }
+            })
+          })
+          setAvailableActions(actions)
+        },
+      )
+      .catch(() => {})
+  }, [isOpen, steps])
+
+  /**
+   * Finds a knowledge base item name in text based on type-specific patterns
+   */
+  const findInText = (
+    text: string,
+    names: string[],
+    type: KnowledgeBaseType,
+  ): {
+    name: string
+    match: RegExpMatchArray
+    type: KnowledgeBaseType
+  } | null => {
+    if (!names.length) return null
+
+    // Sort names by length (longest first) to avoid partial matches
+    const sortedNames = [...names].sort((a, b) => b.length - a.length)
+
+    for (const name of sortedNames) {
+      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      let patterns: RegExp[] = []
+
+      switch (type) {
+        case 'work_order':
+          patterns = [
+            new RegExp(
+              `\\b(create|Create)\\s+(a|an|the)?\\s+(${escapedName})\\s+work\\s+order\\b`,
+              'i',
+            ),
+            new RegExp(`\\b(${escapedName})\\s+work\\s+order\\b`, 'i'),
+          ]
+          break
+        case 'equipment':
+          patterns = [
+            new RegExp(
+              `\\b(refer to|check|see|view)\\s+(the\\s+)?(${escapedName})\\b`,
+              'i',
+            ),
+            new RegExp(`\\b(${escapedName})\\b`, 'i'),
+          ]
+          break
+        case 'outage':
+          patterns = [
+            new RegExp(
+              `\\b(check|view|see)\\s+(the\\s+)?(${escapedName})\\b`,
+              'i',
+            ),
+            new RegExp(`\\b(${escapedName})\\b`, 'i'),
+          ]
+          break
+        case 'policy':
+          patterns = [
+            new RegExp(
+              `\\b(refer to|check|see|follow)\\s+(the\\s+)?(${escapedName})\\b`,
+              'i',
+            ),
+            new RegExp(`\\b(${escapedName})\\b`, 'i'),
+          ]
+          break
+        case 'reference':
+          patterns = [
+            new RegExp(
+              `\\b(refer to|check|see|use)\\s+(the\\s+)?(${escapedName})\\b`,
+              'i',
+            ),
+            new RegExp(`\\b(${escapedName})\\b`, 'i'),
+          ]
+          break
+        case 'subscriber':
+          patterns = [
+            new RegExp(
+              `\\b(use|update|check|refer to)\\s+(the\\s+)?(${escapedName})\\b`,
+              'i',
+            ),
+            new RegExp(`\\b(${escapedName})\\b`, 'i'),
+          ]
+          break
+      }
+
+      for (const pattern of patterns) {
+        const match = text.match(pattern)
+        if (match && match.index !== undefined) {
+          return { name, match, type }
+        }
+      }
+    }
+    return null
+  }
+
+  const handleItemClick = async (name: string, type: KnowledgeBaseType) => {
+    logAction('view_knowledge_base', name, type)
+    const url =
+      type === 'work_order'
+        ? `/api/work-order?name=${encodeURIComponent(name)}`
+        : `/api/knowledge-base?name=${encodeURIComponent(name)}&type=${type}`
+
+    const response = await fetch(url)
+    if (response.ok) {
+      const item = await response.json()
+      setSelectedItem({ ...item, type })
+    }
+  }
+
+  const handleAction = async (
+    actionType: string,
+    params: Record<string, any> = {},
+  ) => {
+    setActionLoading(actionType)
+    logAction(
+      `execute_${actionType}`,
+      params.equipmentName || params.subscriberName || '',
+      '',
+    )
+
+    const actionConfig = industryConfig.actions.find((a) => a.type === actionType)
+    const apiRoute = actionConfig?.apiRoute || `/api/actions/${actionType}`
+
+    try {
+      const response = await fetch(apiRoute, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setActionResults({ ...actionResults, [actionType]: result })
+        setTimeout(() => {
+          setActionResults((prev) => {
+            const next = { ...prev }
+            delete next[actionType]
+            return next
+          })
+        }, 5000)
+      }
+    } catch {
+      // Ignore errors
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const renderActionButton = (
+    actionType: string,
+    label: string,
+    params: Record<string, any>,
+    icon: React.ReactNode,
+  ) => {
+    const isLoading = actionLoading === actionType
+    const result = actionResults[actionType]
+
+    return (
+      <div className="inline-flex items-center gap-2">
+        <button
+          onClick={() => handleAction(actionType, params)}
+          disabled={isLoading}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 hover:border-emerald-300"
+        >
+          {isLoading ? (
+            <ArrowPathIcon className="w-4 h-4 animate-spin" />
+          ) : (
+            icon
+          )}
+          <span>{isLoading ? 'Processing...' : label}</span>
+        </button>
+        {result && (
+          <span className="text-xs text-emerald-600 font-medium">
+            ✓ {result.message || 'Success'}
+          </span>
+        )}
+      </div>
+    )
+  }
+
+  const renderStepWithKnowledgeBase = (step: string) => {
+    // Check all types in priority order (work orders first, then others)
+    const types: KnowledgeBaseType[] = [
+      'work_order',
+      'equipment',
+      'outage',
+      'policy',
+      'reference',
+      'subscriber',
+    ]
+
+    for (const type of types) {
+      const match = findInText(step, typeNames[type], type)
+      if (match) {
+        const { name, match: regexMatch, type: matchType } = match
+        const matchIndex = regexMatch.index
+        if (matchIndex === undefined) continue
+
+        const beforeMatch = step.substring(0, matchIndex)
+        const afterMatch = step.substring(matchIndex + regexMatch[0].length)
+
+        let itemName = name
+        if (matchType === 'work_order') {
+          itemName = regexMatch[3] || regexMatch[1] || name
+          const hasCreatePrefix =
+            regexMatch[1] && regexMatch[1].toLowerCase() === 'create'
+          const prefix = hasCreatePrefix
+            ? `${regexMatch[1]} ${regexMatch[2] ? regexMatch[2] + ' ' : ''}`
+            : ''
+
+          return (
+            <span>
+              {beforeMatch}
+              {prefix && <span>{prefix}</span>}
+              <button
+                onClick={() => handleItemClick(itemName, matchType)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 mx-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors underline decoration-dotted"
+              >
+                {itemName}
+                <InformationCircleIcon className="w-4 h-4" />
+              </button>
+              <span> work order</span>
+              {afterMatch}
+            </span>
+          )
+        } else {
+          itemName = regexMatch[3] || regexMatch[1] || name
+
+          return (
+            <span>
+              {beforeMatch}
+              <button
+                onClick={() => handleItemClick(itemName, matchType)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 mx-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors underline decoration-dotted"
+              >
+                {itemName}
+                <InformationCircleIcon className="w-4 h-4" />
+              </button>
+              {afterMatch}
+            </span>
+          )
+        }
+      }
+    }
+
+    return <span>{step}</span>
+  }
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleEscape)
+
+    const firstFocusable = modalRef.current?.querySelector(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    ) as HTMLElement
+    firstFocusable?.focus()
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="resolution-title"
+    >
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div
+        ref={modalRef}
+        className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+      >
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
+          <h2
+            id="resolution-title"
+            className="text-2xl font-bold text-slate-800"
+          >
+            {title}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
@@ -49,32 +478,80 @@ export default function ResolutionModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
+          {availableActions.length > 0 && (
+            <div className="mb-6 bg-emerald-50/50 rounded-xl border border-emerald-200/50 p-4">
+              <h3 className="text-sm font-semibold text-emerald-800 mb-3">
+                Actions
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {availableActions.map((action, idx) => (
+                  <div key={`${action.type}-${idx}`}>
+                    {renderActionButton(
+                      action.type,
+                      action.label,
+                      action.params,
+                      action.icon,
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <h3 className="text-lg font-semibold text-slate-700 mb-4">
             Resolution Steps
           </h3>
           <ol className="space-y-3">
-            {stepType === 'numbered' ? (
-              steps.map((step, index) => (
-                <li key={index} className="flex gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-sm">
-                    {index + 1}
-                  </span>
-                  <span className="flex-1 text-slate-700 leading-relaxed pt-1">
-                    {step}
-                  </span>
-                </li>
-              ))
-            ) : (
-              steps.map((step, index) => (
-                <li key={index} className="flex gap-3">
-                  <span className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2.5" />
-                  <span className="flex-1 text-slate-700 leading-relaxed">
-                    {step}
-                  </span>
-                </li>
-              ))
-            )}
+            {stepType === 'numbered'
+              ? steps.map((step, index) => (
+                  <li key={index} className="flex gap-3">
+                    <span className="shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-sm">
+                      {index + 1}
+                    </span>
+                    <span className="flex-1 text-slate-700 leading-relaxed pt-1">
+                      {renderStepWithKnowledgeBase(step)}
+                    </span>
+                  </li>
+                ))
+              : steps.map((step, index) => (
+                  <li key={index} className="flex gap-3">
+                    <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2.5" />
+                    <span className="flex-1 text-slate-700 leading-relaxed">
+                      {renderStepWithKnowledgeBase(step)}
+                    </span>
+                  </li>
+                ))}
           </ol>
+
+          {selectedItem && (
+            <KnowledgeBaseItemDisplay
+              item={selectedItem}
+              onClose={() => setSelectedItem(null)}
+              onScheduleWorkOrder={
+                selectedItem.type === 'work_order'
+                  ? () => {
+                      logAction(
+                        'click_schedule_work_order',
+                        selectedItem.title,
+                        'work_order',
+                      )
+                      setIsScheduleModalOpen(true)
+                    }
+                  : undefined
+              }
+              onUpdateSubscriber={
+                selectedItem.type === 'subscriber'
+                  ? () => {
+                      logAction(
+                        'click_update_subscriber',
+                        selectedItem.title,
+                        'subscriber',
+                      )
+                      setIsUpdateSubscriberModalOpen(true)
+                    }
+                  : undefined
+              }
+            />
+          )}
         </div>
 
         <div className="p-6 border-t border-slate-200 bg-slate-50">
@@ -118,6 +595,21 @@ export default function ResolutionModal({
           </button>
         </div>
       </div>
+
+      {selectedItem && selectedItem.type === 'work_order' && (
+        <ScheduleWorkOrderModal
+          isOpen={isScheduleModalOpen}
+          onClose={() => setIsScheduleModalOpen(false)}
+          workOrder={selectedItem}
+        />
+      )}
+      {selectedItem && selectedItem.type === 'subscriber' && (
+        <UpdateSubscriberModal
+          isOpen={isUpdateSubscriberModalOpen}
+          onClose={() => setIsUpdateSubscriberModalOpen(false)}
+          subscriber={selectedItem}
+        />
+      )}
     </div>
   )
 }

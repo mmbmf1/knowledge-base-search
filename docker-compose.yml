@@ -1,13 +1,11 @@
-version: '3.8'
-
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: isp-support-db
+    container_name: ${DB_CONTAINER_NAME:-isp-support-db}
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: isp_support
+      POSTGRES_DB: ${DB_NAME:-isp_support}
     ports:
       - '5432:5432'
     volumes:

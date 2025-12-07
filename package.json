@@ -11,11 +11,12 @@
     "format:check": "prettier --check .",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "seed": "tsx scripts/seed.ts",
-    "seed:feedback": "tsx scripts/seed-feedback.ts"
+    "setup": "tsx scripts/setup-db.ts",
+    "seed": "tsx scripts/seed-all.ts",
+    "migrate": "tsx scripts/migrate-all.ts"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
+    "@heroicons/react": "2.2.0",
     "@huggingface/transformers": "3.8.1",
     "@types/pg": "8.15.6",
     "dotenv": "17.2.3",

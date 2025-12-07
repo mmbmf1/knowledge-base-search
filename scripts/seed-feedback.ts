@@ -8,7 +8,7 @@
  * - Varies total feedback counts for realism
  */
 
-import { pool, closePool } from '../lib/db'
+import { pool, closePool, getSchemaName } from '../lib/db'
 
 // Mock queries that users might search for
 const mockQueries = [
@@ -93,12 +93,13 @@ async function seedFeedback() {
   console.log('Starting feedback seeding...')
 
   try {
+    const schema = getSchemaName()
     let totalFeedback = 0
 
     for (const [title, helpfulRate, totalCount] of feedbackPatterns) {
       // Find scenario by title (get the most recent one if duplicates exist)
       const scenarioResult = await pool.query(
-        'SELECT id FROM isp_support.scenarios WHERE title = $1 ORDER BY id DESC LIMIT 1',
+        `SELECT id FROM ${schema}.scenarios WHERE title = $1 ORDER BY id DESC LIMIT 1`,
         [title],
       )
 
@@ -117,7 +118,7 @@ async function seedFeedback() {
         const query =
           mockQueries[Math.floor(Math.random() * mockQueries.length)]
         await pool.query(
-          'INSERT INTO isp_support.feedback (query, scenario_id, rating) VALUES ($1, $2, $3)',
+          `INSERT INTO ${schema}.feedback (query, scenario_id, rating) VALUES ($1, $2, $3)`,
           [query, scenarioId, 1],
         )
         totalFeedback++
@@ -128,7 +129,7 @@ async function seedFeedback() {
         const query =
           mockQueries[Math.floor(Math.random() * mockQueries.length)]
         await pool.query(
-          'INSERT INTO isp_support.feedback (query, scenario_id, rating) VALUES ($1, $2, $3)',
+          `INSERT INTO ${schema}.feedback (query, scenario_id, rating) VALUES ($1, $2, $3)`,
           [query, scenarioId, -1],
         )
         totalFeedback++

@@ -1,209 +1,148 @@
-# ISP Support Chat Tool (Prototype)
+# Knowledge Base Search
 
-## Overview
+A semantic search application for knowledge bases with vector embeddings, feedback tracking, and analytics.
 
-A simple Next.js prototype application that uses semantic search to match user troubleshooting queries against a knowledge base of ISP scenarios. Designed to be generalizable for any ISP type, with initial prototype focused on FTTH/MSR (Multi-Service Router) scenarios. Users input troubleshooting queries (e.g., "light on router is red") and receive the top 5 most similar scenarios. Uses transformers.js for embeddings and PostgreSQL with pgvector for vector similarity search. Styled with Tailwind CSS for a minimal, clean interface.
+## Features
 
-**Note**: This is a prototype for company use, but architected to be adaptable for any ISP's knowledge base.
+- **Semantic Search**: Vector-based similarity search using embeddings
+- **Knowledge Base**: Support for multiple content types (scenarios, work orders, equipment, outages, policies, references, subscribers)
+- **Feedback System**: Track helpful/not helpful ratings with analytics
+- **Top Searches**: Display most popular and helpful searches
+- **Interactive Modals**: View detailed resolutions and knowledge base items
 
-## Architecture
+## Tech Stack
 
-- **Frontend**: Next.js app with simple chat-like text input interface (Tailwind CSS)
-- **Backend**: Next.js API routes for embedding generation and similarity search
-- **Database**: PostgreSQL with pgvector extension (Dockerized)
-- **Embeddings**: transformers.js (Hugging Face models) running locally
-- **Vector Search**: pgvector cosine similarity
+- **Next.js 16** - React framework
+- **PostgreSQL** - Database with pgvector extension
+- **Hugging Face Transformers** - Embedding generation
+- **Tailwind CSS** - Styling
+- **TypeScript** - Type safety
 
 ## Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 18+
 - Docker and Docker Compose
-- Git
 
-## Setup Instructions
+## Quick Start
 
-### 1. Install Dependencies
+1. **Install dependencies**
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
-### 2. Configure Environment Variables
+2. **Configure environment**
 
-Copy the example environment file and update with your database credentials:
+   Create `.env.local` file:
 
-```bash
-cp .env.local.example .env.local
-```
+   ```bash
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/isp_support
+   DB_SCHEMA=isp_support           # Optional: Database schema name (default: isp_support)
+   DB_NAME=isp_support             # Optional: Database name for Docker (default: isp_support)
+   DB_CONTAINER_NAME=isp-support-db # Optional: Docker container name (default: isp-support-db)
+   DEFAULT_INDUSTRY=isp            # Optional: Default industry for scenarios (default: isp)
+   INDUSTRY=isp                    # Optional: Industry config to use (default: isp)
+   ```
 
-Edit `.env.local` and set your database connection string:
+3. **Start database with Docker**
 
-```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/isp_support
-```
+   ```bash
+   npm run docker:up
+   ```
 
-### 3. Start Docker Database
+   This starts PostgreSQL with pgvector extension in a container. The database persists in a Docker volume, so your data survives container restarts.
 
-Start the PostgreSQL container with pgvector:
+4. **Setup database** (migration + seeding)
 
-```bash
-npm run docker:up
-```
+   ```bash
+   npm run setup
+   ```
 
-This will:
+5. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-- Start PostgreSQL 16 with pgvector extension
-- Create the database `isp_support`
-- Enable the pgvector extension automatically
+Open [http://localhost:3000](http://localhost:3000)
 
-### 4. Create Database Schema
+## Docker Setup
 
-Connect to the database and run the schema script:
+This project uses Docker Compose to run PostgreSQL with the pgvector extension, which is required for semantic search.
 
-```bash
-# Using psql (if installed)
-psql postgresql://postgres:postgres@localhost:5432/isp_support -f scripts/schema.sql
+**Why Docker?**
 
-# Or using Docker
-docker exec -i isp-support-db psql -U postgres -d isp_support < scripts/schema.sql
-```
+- **pgvector Extension**: Pre-configured PostgreSQL image with vector similarity search
+- **Zero Configuration**: No need to install PostgreSQL or extensions manually
+- **Data Persistence**: Database data persists in Docker volumes
+- **Easy Reset**: Stop/start containers without losing data
+- **Consistent Environment**: Same database setup across all machines
 
-### 5. Seed the Database
+**Docker Commands:**
 
-Populate the database with sample scenarios:
+- `npm run docker:up` - Start PostgreSQL container
+- `npm run docker:down` - Stop and remove container (data persists in volume)
+- `docker-compose ps` - Check container status
+- `docker-compose logs postgres` - View database logs
 
-```bash
-npm run seed
-```
+**Database Details:**
 
-This will:
-
-- Generate embeddings for all sample scenarios
-- Insert them into the database
-- Display progress as it processes each scenario
-
-### 6. Start Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Development Workflow
-
-1. **Start Docker database**: `npm run docker:up`
-2. **Run development server**: `npm run dev`
-3. **Make changes** to code (hot reload enabled)
-4. **Test search functionality** in the browser
-5. **Stop Docker database**: `npm run docker:down` (when done)
-
-## Customizing for Different ISPs
-
-### Seed Data Format
-
-The seed data is structured as an array of objects with `title` and `description` fields. To customize for a different ISP:
-
-1. Open `scripts/seed.ts`
-2. Replace the `scenarios` array with your ISP's troubleshooting scenarios
-3. Each scenario should follow this format:
-
-```typescript
-{
-    title: "Short descriptive title",
-    description: "Detailed description of the troubleshooting scenario, including symptoms, possible causes, and resolution steps."
-}
-```
-
-4. Run `npm run seed` to regenerate embeddings and update the database
-
-### Example Customization
-
-```typescript
-const scenarios = [
-  {
-    title: 'Cable Modem Signal Issues',
-    description:
-      'User reports frequent disconnections. Check signal levels, verify cable connections, and test with different modem if available.',
-  },
-  // ... more scenarios
-]
-```
-
-### Database Schema
-
-The database schema is ISP-agnostic and only requires:
-
-- `title`: Short scenario title
-- `description`: Detailed scenario description
-- `embedding`: Vector embedding (automatically generated)
-
-No ISP-specific fields are required, making it easy to adapt for any ISP type.
-
-## Environment Variables
-
-| Variable       | Description                  | Example                                        |
-| -------------- | ---------------------------- | ---------------------------------------------- |
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/dbname` |
+- **Image**: `pgvector/pgvector:pg16` (PostgreSQL 16 with pgvector)
+- **Port**: `5432` (mapped to host)
+- **Credentials**: `postgres/postgres`
+- **Database**: `isp_support` (configurable via `DB_NAME` env var)
+- **Schema**: `isp_support` (configurable via `DB_SCHEMA` env var)
+- **Volume**: `postgres_data` (persists data between restarts)
 
 ## Available Scripts
 
-- `npm run dev` - Start Next.js development server
-- `npm run build` - Build production bundle
+**Database:**
+
+- `npm run setup` - Complete database setup (migration + all seeding)
+- `npm run migrate` - Run database migrations only
+- `npm run seed` - Seed all data (requires schema to exist)
+
+**Docker:**
+
+- `npm run docker:up` - Start PostgreSQL container
+- `npm run docker:down` - Stop PostgreSQL container
+
+**Development:**
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run docker:up` - Start Docker containers
-- `npm run docker:down` - Stop Docker containers
-- `npm run seed` - Seed database with sample scenarios
-
-## Technical Details
-
-- **Embedding Model**: `Xenova/all-MiniLM-L6-v2` (384 dimensions)
-- **Pipeline Type**: `feature-extraction` for generating embeddings
-- **Vector Type**: `vector(384)` in PostgreSQL
-- **Similarity Metric**: Cosine distance (`<=>` operator)
-- **Search Limit**: Top 5 results
-- **Embedding Generation**: Server-side in API routes using transformers.js
-- **Framework**: Next.js 16 with App Router
+- `npm run format` - Format code with Prettier
 
 ## Project Structure
 
 ```
-/app
-  /api/search/route.ts    # Search API endpoint
-  /page.tsx                # Main UI component
-  /layout.tsx              # Root layout
-/lib
-  /embeddings.ts           # Embedding generation service
-  /db.ts                   # Database connection and queries
-/scripts
-  /schema.sql              # Database schema
-  /init-db.sql             # Database initialization
-  /seed.ts                 # Seed data script
-docker-compose.yml         # Docker configuration
-.env.local.example         # Environment variables template
+app/
+  api/              # API routes
+  components/       # React components
+  page.tsx         # Main search page
+lib/
+  db.ts            # Database functions
+  embeddings.ts    # Embedding generation
+scripts/
+  setup-db.ts      # Complete database setup
+  migrate-all.ts   # Migration runner
+  seed-all.ts      # Seed data runner
+  seed-*.ts        # Individual seed scripts
 ```
 
-## Troubleshooting
+## Database Schema
 
-### Database Connection Issues
+- `scenarios` - Main content items with vector embeddings
+- `resolutions` - Step-by-step resolution instructions
+- `feedback` - User ratings (helpful/not helpful)
+- `actions` - User interaction logs
 
-- Ensure Docker container is running: `docker ps`
-- Check database credentials in `.env.local`
-- Verify port 5432 is not in use by another service
+## Development
 
-### Embedding Generation Errors
+The app uses semantic search with vector embeddings. When a user searches:
 
-- Ensure `@huggingface/transformers` is installed
-- Check that model can download (first run downloads the model)
-- Verify Next.js config includes `serverComponentsExternalPackages`
-
-### No Search Results
-
-- Ensure database is seeded: `npm run seed`
-- Check that scenarios exist in database
-- Verify embeddings were generated correctly
-
-## License
-
-Internal prototype for company use.
+1. Query is converted to a 384-dimensional embedding
+2. Cosine similarity search finds matching scenarios
+3. Results are ranked by similarity and feedback scores
+4. User can provide feedback to improve future results

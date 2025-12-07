@@ -10,7 +10,7 @@ const P = () =>
 
     static async getInstance() {
       if (this.instance === null) {
-        this.instance = pipeline(this.task, this.model)
+        this.instance = pipeline(this.task as any, this.model)
       }
       return this.instance
     }

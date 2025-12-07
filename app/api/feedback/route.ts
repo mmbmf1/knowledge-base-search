@@ -3,38 +3,17 @@ import { recordFeedback } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { query, scenarioId, rating } = body
+    const { query, scenarioId, rating } = await request.json()
 
-    if (!query || typeof query !== 'string' || query.trim().length === 0) {
-      return NextResponse.json({ error: 'Query is required' }, { status: 400 })
-    }
-
-    if (
-      !scenarioId ||
-      typeof scenarioId !== 'number' ||
-      !Number.isInteger(scenarioId)
-    ) {
-      return NextResponse.json(
-        { error: 'Invalid scenario ID' },
-        { status: 400 },
-      )
-    }
-
-    if (rating !== 1 && rating !== -1) {
-      return NextResponse.json(
-        { error: 'Rating must be 1 or -1' },
-        { status: 400 },
-      )
+    if (!query?.trim() || typeof scenarioId !== 'number' || ![-1, 1].includes(rating)) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
 
     await recordFeedback(query.trim(), scenarioId, rating)
-
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error in feedback API:', error)
+  } catch (error: any) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error?.message || 'Internal server error' },
       { status: 500 },
     )
   }
