@@ -2,13 +2,14 @@
  * Seed script for populating equipment/technical information
  */
 
-import { generateEmbedding } from '../lib/embeddings'
+import { generateEmbedding } from 'simple-embeddings'
 import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 const equipment = [
   {
     name: 'Router Model X-2000',
-    description: 'Standard router model with dual-band WiFi, 4 Ethernet ports, and fiber connectivity. Default IP: 192.168.1.1',
+    description:
+      'Standard router model with dual-band WiFi, 4 Ethernet ports, and fiber connectivity. Default IP: 192.168.1.1',
     metadata: {
       model: 'X-2000',
       manufacturer: 'TechCorp',
@@ -31,7 +32,8 @@ const equipment = [
   },
   {
     name: 'ONT Model F-500',
-    description: 'Fiber Optical Network Terminal with GPON support. Handles fiber-to-home connections.',
+    description:
+      'Fiber Optical Network Terminal with GPON support. Handles fiber-to-home connections.',
     metadata: {
       model: 'F-500',
       manufacturer: 'FiberTech',
@@ -57,7 +59,8 @@ const equipment = [
   },
   {
     name: 'Modem Model C-300',
-    description: 'Cable modem with DOCSIS 3.1 support. Compatible with cable internet services.',
+    description:
+      'Cable modem with DOCSIS 3.1 support. Compatible with cable internet services.',
     metadata: {
       model: 'C-300',
       manufacturer: 'CableNet',
@@ -68,9 +71,9 @@ const equipment = [
         defaultIP: '192.168.100.1',
       },
       lightStatus: {
-        'Power': 'Green = Normal, Red = Issue',
+        Power: 'Green = Normal, Red = Issue',
         'DS/US': 'Downstream/Upstream sync status',
-        'Online': 'Green = Connected, Blinking = Connecting',
+        Online: 'Green = Connected, Blinking = Connecting',
       },
       commonIssues: [
         'Online light blinking - signal issue',

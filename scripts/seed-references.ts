@@ -2,7 +2,7 @@
  * Seed script for populating reference documents and guides
  */
 
-import { generateEmbedding } from '../lib/embeddings'
+import { generateEmbedding } from 'simple-embeddings'
 import { insertScenario, closePool, pool, getSchemaName } from '../lib/db'
 
 const references = [

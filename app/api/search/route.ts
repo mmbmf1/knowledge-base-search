@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateEmbedding } from '@/lib/embeddings'
+import { generateEmbedding } from 'simple-embeddings'
 import { searchSimilarScenarios } from '@/lib/db'
 import { getIndustryConfig } from '@/lib/industry-config'
 import { validateString } from '@/lib/api-validation'

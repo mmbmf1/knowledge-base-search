@@ -10,7 +10,7 @@
  * The script will automatically generate embeddings and insert them into the database.
  */
 
-import { generateEmbedding } from '../lib/embeddings'
+import { generateEmbedding } from 'simple-embeddings'
 import { insertScenario, insertResolution, closePool, pool, getSchemaName } from '../lib/db'
 
 // Sample MSR/FTTH troubleshooting scenarios
