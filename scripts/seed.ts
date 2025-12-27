@@ -1,21 +1,12 @@
 /**
- * Seed script for populating the database with sample ISP troubleshooting scenarios
+ * Seed script for populating the database with scenarios
  *
- * This script demonstrates the seed data format for MSR/FTTH scenarios.
- * To customize for a different ISP, replace the scenarios array below with
- * your own scenario data following the same structure:
- *
- * { title: string, description: string }
- *
+ * Structure: { title: string, description: string }
  * The script will automatically generate embeddings and insert them into the database.
  */
 
 import { generateEmbedding } from 'simple-embeddings'
 import { insertScenario, insertResolution, closePool, pool, getSchemaName } from '../lib/db'
-
-// Sample MSR/FTTH troubleshooting scenarios
-// Structure: { title: string, description: string }
-// This format is easily replaceable for different ISP types
 const scenarios = [
   {
     title: 'Router Power Light is Red',

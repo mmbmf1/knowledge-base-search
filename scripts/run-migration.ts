@@ -3,7 +3,7 @@
  * Usage: tsx scripts/run-migration.ts [migration-file.sql]
  */
 
-import { pool, closePool, getSchemaName, getDefaultIndustry } from '../lib/db'
+import { pool, closePool, getSchemaName } from '../lib/db'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
@@ -31,9 +31,7 @@ async function runMigration() {
 
     // Replace placeholders with actual values
     const schemaName = getSchemaName()
-    const defaultIndustry = getDefaultIndustry()
     migrationSQL = migrationSQL.replace(/\{\{SCHEMA_NAME\}\}/g, schemaName)
-    migrationSQL = migrationSQL.replace(/\{\{DEFAULT_INDUSTRY\}\}/g, defaultIndustry)
 
     // Remove comments
     const cleanedSQL = migrationSQL

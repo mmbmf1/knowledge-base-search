@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS {{SCHEMA_NAME}}.scenarios (
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     embedding vector(384),
-    industry TEXT DEFAULT '{{DEFAULT_INDUSTRY}}',
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -55,10 +54,6 @@ ADD COLUMN IF NOT EXISTS type VARCHAR(20) DEFAULT 'scenario';
 ALTER TABLE {{SCHEMA_NAME}}.scenarios 
 ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
--- Add industry column for multi-industry support (if not exists)
-ALTER TABLE {{SCHEMA_NAME}}.scenarios 
-ADD COLUMN IF NOT EXISTS industry TEXT DEFAULT '{{DEFAULT_INDUSTRY}}';
-
 -- Drop existing constraint if it exists
 ALTER TABLE {{SCHEMA_NAME}}.scenarios 
 DROP CONSTRAINT IF EXISTS scenarios_type_check;
@@ -70,9 +65,6 @@ CHECK (type IN ('scenario', 'work_order', 'equipment', 'outage', 'policy', 'refe
 
 -- Create index on type for filtering (if not exists)
 CREATE INDEX IF NOT EXISTS scenarios_type_idx ON {{SCHEMA_NAME}}.scenarios(type);
-
--- Create index on industry for filtering (if not exists)
-CREATE INDEX IF NOT EXISTS scenarios_industry_idx ON {{SCHEMA_NAME}}.scenarios(industry);
 
 -- Create index on metadata for queries (if not exists)
 CREATE INDEX IF NOT EXISTS scenarios_metadata_idx ON {{SCHEMA_NAME}}.scenarios USING GIN(metadata);

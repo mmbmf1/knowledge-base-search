@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateEmbedding } from 'simple-embeddings'
 import { searchSimilarScenarios } from '@/lib/db'
-import { getIndustryConfig } from '@/lib/industry-config'
 import { validateString } from '@/lib/api-validation'
 
 export async function POST(request: NextRequest) {
@@ -16,13 +15,11 @@ export async function POST(request: NextRequest) {
 
     const trimmedQuery = query.trim()
 
-    const industryConfig = getIndustryConfig()
     const queryEmbedding = await generateEmbedding(trimmedQuery)
     const results = await searchSimilarScenarios(
       queryEmbedding,
       5,
       (type || 'scenario') as 'scenario' | 'work_order',
-      industryConfig.industry,
     )
 
     return NextResponse.json({ results })

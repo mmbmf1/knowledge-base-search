@@ -13,7 +13,7 @@ import {
 import ScheduleWorkOrderModal from './ScheduleWorkOrderModal'
 import KnowledgeBaseItemDisplay from './KnowledgeBaseItemDisplay'
 import UpdateSubscriberModal from './UpdateSubscriberModal'
-import { industryConfig } from '@/lib/industry-config'
+import { getActions } from '@/lib/actions-config'
 
 interface ResolutionModalProps {
   title: string
@@ -143,8 +143,9 @@ export default function ResolutionModal({
           }> = []
           const addedTypes = new Set<string>()
 
+          const actionConfigs = getActions()
           steps.forEach((step) => {
-            industryConfig.actions.forEach((actionConfig) => {
+            actionConfigs.forEach((actionConfig) => {
               if (addedTypes.has(actionConfig.type)) return
 
               const matches = actionConfig.patterns.some((pattern) =>
@@ -297,7 +298,8 @@ export default function ResolutionModal({
       '',
     )
 
-    const actionConfig = industryConfig.actions.find((a) => a.type === actionType)
+    const actionConfigs = getActions()
+    const actionConfig = actionConfigs.find((a) => a.type === actionType)
     const apiRoute = actionConfig?.apiRoute || `/api/actions/${actionType}`
 
     try {

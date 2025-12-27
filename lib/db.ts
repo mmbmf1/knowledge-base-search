@@ -17,10 +17,6 @@ export function getSchemaName(): string {
   return process.env.DB_SCHEMA || 'isp_support'
 }
 
-// Get default industry from environment variable (default: isp)
-export function getDefaultIndustry(): string {
-  return process.env.DEFAULT_INDUSTRY || 'isp'
-}
 
 // Create connection pool
 export const pool = new Pool({
@@ -48,7 +44,6 @@ export interface Scenario {
     | 'policy'
     | 'reference'
     | 'subscriber'
-  industry?: string
   metadata?: Record<string, any>
   similarity?: number
   helpful_count?: number
@@ -81,15 +76,12 @@ export async function searchSimilarScenarios(
     | 'policy'
     | 'reference'
     | 'subscriber',
-  industry: string | null = null,
 ): Promise<Scenario[]> {
   const schema = getSchemaName()
-  const defaultIndustry = getDefaultIndustry()
-  const industryFilter = industry || defaultIndustry
-  const typeFilter = type ? 'AND s.type = $4' : ''
+  const typeFilter = type ? 'AND s.type = $3' : ''
   const params = type
-    ? [`[${embedding.join(',')}]`, limit, industryFilter, type, defaultIndustry]
-    : [`[${embedding.join(',')}]`, limit, industryFilter, defaultIndustry]
+    ? [`[${embedding.join(',')}]`, limit, type]
+    : [`[${embedding.join(',')}]`, limit]
 
   const query = `
         WITH ranked_scenarios AS (
@@ -98,7 +90,6 @@ export async function searchSimilarScenarios(
                 s.title,
                 s.description,
                 s.type,
-                COALESCE(s.industry, $${type ? '5' : '4'}) as industry,
                 s.metadata,
                 1 - (s.embedding <=> $1::vector) as similarity,
                 COALESCE(SUM(CASE WHEN f.rating = 1 THEN 1 ELSE 0 END), 0)::int as helpful_count,
@@ -113,58 +104,7 @@ export async function searchSimilarScenarios(
                    FROM ${schema}.scenarios s
                    LEFT JOIN ${schema}.feedback f ON s.id = f.scenario_id
                    WHERE s.embedding IS NOT NULL
-                   AND (COALESCE(s.industry, $${type ? '5' : '4'}) = $3)
                    ${typeFilter}
-                   GROUP BY s.id, s.title, s.description, s.type, s.industry, s.metadata, s.embedding
-        )
-               SELECT 
-                   id,
-                   title,
-                   description,
-                   type,
-                   industry,
-                   metadata,
-                   similarity,
-                   helpful_count,
-                   not_helpful_count,
-                   total_feedback,
-                   helpful_percentage
-               FROM ranked_scenarios
-        WHERE rn = 1
-        ORDER BY 
-            (similarity * 0.7 + COALESCE(helpful_percentage / 100.0, 0.5) * 0.3) DESC
-        LIMIT $2
-    `
-
-  try {
-    const result: QueryResult<Scenario> = await pool.query(query, params)
-
-    return result.rows
-  } catch (error: any) {
-    if (error?.code === '42703' || error?.message?.includes('industry')) {
-      const fallbackTypeFilter = type ? 'AND s.type = $3' : ''
-      const fallbackQuery = `
-        WITH ranked_scenarios AS (
-            SELECT 
-                s.id,
-                s.title,
-                s.description,
-                s.type,
-                s.metadata,
-                1 - (s.embedding <=> $1::vector) as similarity,
-                COALESCE(SUM(CASE WHEN f.rating = 1 THEN 1 ELSE 0 END), 0)::int as helpful_count,
-                COALESCE(SUM(CASE WHEN f.rating = -1 THEN 1 ELSE 0 END), 0)::int as not_helpful_count,
-                COUNT(f.id)::int as total_feedback,
-                CASE 
-                    WHEN COUNT(f.id) > 0 THEN 
-                        ROUND((SUM(CASE WHEN f.rating = 1 THEN 1 ELSE 0 END)::numeric / COUNT(f.id)::numeric) * 100, 1)
-                    ELSE NULL
-                END as helpful_percentage,
-                ROW_NUMBER() OVER (PARTITION BY s.title ORDER BY s.embedding <=> $1::vector) as rn
-                   FROM ${schema}.scenarios s
-                   LEFT JOIN ${schema}.feedback f ON s.id = f.scenario_id
-                   WHERE s.embedding IS NOT NULL
-                   ${fallbackTypeFilter}
                    GROUP BY s.id, s.title, s.description, s.type, s.metadata, s.embedding
         )
                SELECT 
@@ -183,16 +123,12 @@ export async function searchSimilarScenarios(
         ORDER BY 
             (similarity * 0.7 + COALESCE(helpful_percentage / 100.0, 0.5) * 0.3) DESC
         LIMIT $2
-      `
-      const fallbackParams = type
-        ? [`[${embedding.join(',')}]`, limit, type]
-        : [`[${embedding.join(',')}]`, limit]
-      const result: QueryResult<Scenario> = await pool.query(
-        fallbackQuery,
-        fallbackParams,
-      )
-      return result.rows.map((row) => ({ ...row, industry: defaultIndustry }))
-    }
+    `
+
+  try {
+    const result: QueryResult<Scenario> = await pool.query(query, params)
+    return result.rows
+  } catch (error: any) {
     console.error('Error searching similar scenarios:', error)
     throw error
   }
@@ -219,13 +155,11 @@ export async function insertScenario(
     | 'reference'
     | 'subscriber' = 'scenario',
   metadata: Record<string, any> = {},
-  industry: string | null = null,
 ): Promise<void> {
-  const defaultIndustry = industry || getDefaultIndustry()
   const schema = getSchemaName()
   const query = `
-              INSERT INTO ${schema}.scenarios (title, description, embedding, type, industry, metadata)
-              VALUES ($1, $2, $3::vector, $4, $5, $6::jsonb)
+              INSERT INTO ${schema}.scenarios (title, description, embedding, type, metadata)
+              VALUES ($1, $2, $3::vector, $4, $5::jsonb)
           `
 
   try {
@@ -234,7 +168,6 @@ export async function insertScenario(
       description,
       `[${embedding.join(',')}]`,
       type,
-      defaultIndustry,
       JSON.stringify(metadata),
     ])
   } catch (error) {
